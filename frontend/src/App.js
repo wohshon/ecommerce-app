@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
-const PRODUCT_SERVICE_URL =
-  window._env_?.PRODUCT_SERVICE_URL || process.env.REACT_APP_PRODUCT_SERVICE_URL;
-const ORDER_SERVICE_URL =
-  window._env_?.ORDER_SERVICE_URL || process.env.REACT_APP_ORDER_SERVICE_URL;
-const PAYMENT_SERVICE_URL =
-  window._env_?.PAYMENT_SERVICE_URL || process.env.REACT_APP_PAYMENT_SERVICE_URL;
+// Only read from process.env
+const PRODUCT_SERVICE_URL = process.env.REACT_APP_PRODUCT_SERVICE_URL;
+const ORDER_SERVICE_URL = process.env.REACT_APP_ORDER_SERVICE_URL;
+const PAYMENT_SERVICE_URL = process.env.REACT_APP_PAYMENT_SERVICE_URL;
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -31,10 +29,10 @@ function App() {
     const payment = await fetch(`${PAYMENT_SERVICE_URL}/pay`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: orderResp.id, amount: orderResp.total })
+      body: JSON.stringify({ orderId: order.id, amount: order.total })
     }).then(r => r.json());
 
-    setOrderResp({ order: orderResp, payment: payment });
+    setOrderResp({ order, payment });
   }
 
   return (
