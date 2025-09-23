@@ -23,7 +23,8 @@ function App() {
   const [orderResp, setOrderResp] = useState(null);
 
   useEffect(() => {
-    fetch(`${PRODUCT_SERVICE_URL}`)
+    //fetch(`${PRODUCT_SERVICE_URL}`)
+    fetch(`/api/products/products`)
       .then(r => r.json())
       .then(setProducts)
       .catch(err => console.error("Product fetch error:", err));
