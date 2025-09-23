@@ -1,13 +1,16 @@
-# build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine
+
 WORKDIR /app
+
+# Install all dependencies, including react-scripts
 COPY package*.json ./
-RUN npm ci
+RUN npm install
+
+# Copy source
 COPY . .
+
+# Build React app
 RUN npm run build
 
-# serve with nginx
-FROM nginx:stable-alpine
-COPY --from=builder /app/build /usr/share/nginx/html
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server.js"]

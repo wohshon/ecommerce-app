@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
-const PRODUCT_SERVICE_URL = process.env.REACT_APP_PRODUCT_SERVICE_URL;
-const ORDER_SERVICE_URL = process.env.REACT_APP_ORDER_SERVICE_URL;
-const PAYMENT_SERVICE_URL = process.env.REACT_APP_PAYMENT_SERVICE_URL;
+const PRODUCT_SERVICE_URL =
+  window._env_?.PRODUCT_SERVICE_URL || process.env.REACT_APP_PRODUCT_SERVICE_URL;
+const ORDER_SERVICE_URL =
+  window._env_?.ORDER_SERVICE_URL || process.env.REACT_APP_ORDER_SERVICE_URL;
+const PAYMENT_SERVICE_URL =
+  window._env_?.PAYMENT_SERVICE_URL || process.env.REACT_APP_PAYMENT_SERVICE_URL;
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -31,7 +34,7 @@ function App() {
       body: JSON.stringify({ orderId: orderResp.id, amount: orderResp.total })
     }).then(r => r.json());
 
-    setOrderResp({ order: orderResp, payment: payResp });
+    setOrderResp({ order: orderResp, payment: payment });
   }
 
   return (
