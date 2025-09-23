@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     //fetch(`${PRODUCT_SERVICE_URL}`)
-    fetch(`/api/products/products`)
+    fetch(`/api/product/products`)
       .then(r => r.json())
       .then(setProducts)
       .catch(err => console.error("Product fetch error:", err));
