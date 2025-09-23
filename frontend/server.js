@@ -10,17 +10,6 @@ const PRODUCT_SERVICE = process.env.PRODUCT_SERVICE || 'http://localhost:8081';
 const ORDER_SERVICE = process.env.ORDER_SERVICE || 'http://localhost:8082';
 const PAYMENT_SERVICE = process.env.PAYMENT_SERVICE || 'http://localhost:8083';
 
-// Serve config.js dynamically
-app.get('/config.js', (req, res) => {
-  res.type('application/javascript');
-  res.send(`
-    window.BACKEND_CONFIG = {
-      PRODUCT_SERVICE: "${PRODUCT_SERVICE}",
-      ORDER_SERVICE: "${ORDER_SERVICE}",
-      PAYMENT_SERVICE: "${PAYMENT_SERVICE}"
-    };
-  `);
-});
 
 // Proxy API requests to the internal services
 app.use('/api/product', createProxyMiddleware({
