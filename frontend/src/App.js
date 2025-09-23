@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
-// Only read from process.env
-const PRODUCT_SERVICE_URL = process.env.REACT_APP_PRODUCT_SERVICE_URL;
-const ORDER_SERVICE_URL = process.env.REACT_APP_ORDER_SERVICE_URL;
-const PAYMENT_SERVICE_URL = process.env.REACT_APP_PAYMENT_SERVICE_URL;
+
+// Internal cluster URLs (HTTP)
+const PRODUCT_SERVICE_URL = "http://product-service.ecommerce-app.svc.cluster.local:8081";
+const ORDER_SERVICE_URL = "http://order-service.ecommerce-app.svc.cluster.local:8082";
+const PAYMENT_SERVICE_URL = "http://payment-service.ecommerce-app.svc.cluster.local:8083";
+
 
 function App() {
   const [products, setProducts] = useState([]);
