@@ -91,3 +91,12 @@ docker run -d --name product-service -p 8081:8081 \
   -e FRONTEND_URLS="http://localhost:3000,http://dev.example.com" \
   docker.io/wohshon/product-service:latest
 ```
+
+```
+For local testing, you can override these by creating a .env.local file in your frontend repo:
+
+REACT_APP_PRODUCT_SERVICE_URL=http://localhost:8081
+REACT_APP_ORDER_SERVICE_URL=http://localhost:8082
+REACT_APP_PAYMENT_SERVICE_URL=http://localhost:8083
+
+```

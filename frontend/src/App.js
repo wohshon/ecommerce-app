@@ -1,30 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
-
-// Internal cluster URLs (HTTP)
-/*
-const PRODUCT_SERVICE_URL = "http://product-service.ecommerce-app.svc.cluster.local:8081";
-const ORDER_SERVICE_URL = "http://order-service.ecommerce-app.svc.cluster.local:8082";
-const PAYMENT_SERVICE_URL = "http://payment-service.ecommerce-app.svc.cluster.local:8083";
-
-const PRODUCT_SERVICE_URL = "https://shop.ntnxlab.local/products";
-const ORDER_SERVICE_URL = "https://shop.ntnxlab.local/orders";
-const PAYMENT_SERVICE_URL = "https://shop.ntnxlab.local/pay";
-*/
-
-const PRODUCT_SERVICE_URL = "https://shop.ntnxlab.local/api/product";
-const ORDER_SERVICE_URL = "https://shop.ntnxlab.local/api/order";
-const PAYMENT_SERVICE_URL = "https://shop.ntnxlab.local/api/payment";
-
+//endpoints exposed by server.js
+const PRODUCT_SERVICE_URL = "/api/product/products";
+const ORDER_SERVICE_URL = "/api/order/orders";
+const PAYMENT_SERVICE_URL = "/api/payment/pay";
 
 function App() {
   const [products, setProducts] = useState([]);
   const [orderResp, setOrderResp] = useState(null);
 
   useEffect(() => {
-    //fetch(`${PRODUCT_SERVICE_URL}`)
-    fetch(`/api/product/products`)
+    fetch(`${PRODUCT_SERVICE_URL}`)
       .then(r => r.json())
       .then(setProducts)
       .catch(err => console.error("Product fetch error:", err));
@@ -71,5 +58,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
