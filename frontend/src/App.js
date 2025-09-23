@@ -3,10 +3,14 @@ import "./App.css";
 
 
 // Internal cluster URLs (HTTP)
+/*
 const PRODUCT_SERVICE_URL = "http://product-service.ecommerce-app.svc.cluster.local:8081";
 const ORDER_SERVICE_URL = "http://order-service.ecommerce-app.svc.cluster.local:8082";
 const PAYMENT_SERVICE_URL = "http://payment-service.ecommerce-app.svc.cluster.local:8083";
-
+*
+const PRODUCT_SERVICE_URL = "https://shop.ntnxlab.local/api/product";
+const ORDER_SERVICE_URL = "https://shop.ntnxlab.local/api/order";
+const PAYMENT_SERVICE_URL = "https://shop.ntnxlab.local/api/payment";
 
 function App() {
   const [products, setProducts] = useState([]);
