@@ -10,6 +10,10 @@ const PRODUCT_SERVICE = process.env.PRODUCT_SERVICE || 'http://localhost:8081';
 const ORDER_SERVICE = process.env.ORDER_SERVICE || 'http://localhost:8082';
 const PAYMENT_SERVICE = process.env.PAYMENT_SERVICE || 'http://localhost:8083';
 
+app.use('/api/product', (req, res, next) => {
+  console.log(`[Proxy] /api/product -> ${PRODUCT_SERVICE} | Incoming path: ${req.path}`);
+  next();
+});
 
 // Proxy API requests to the internal services
 app.use('/api/product', createProxyMiddleware({
