@@ -35,7 +35,7 @@ function Home() {
       const order = await fetch(ORDER_SERVICE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: product.id, quantity: qty })
+        body: JSON.stringify({ product: product, quantity: qty })
       }).then(r => {
         if (!r.ok) throw new Error(`Order service error: ${r.status}`);
         return r.json();

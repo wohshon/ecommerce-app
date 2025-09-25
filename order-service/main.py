@@ -22,8 +22,14 @@ PORT = 8082  # not used directly, we map in Dockerfile
 # In-memory orders store
 orders = {}
 
+class Product(BaseModel):
+    id: int
+    name: str
+    price: float
+    image: str
+
 class OrderIn(BaseModel):
-    product_id: int
+    product: Product
     quantity: int
 
 class Order(OrderIn):
@@ -37,12 +43,15 @@ def health():
 
 @app.post("/orders", response_model=Order)
 def create_order(order_in: OrderIn):
-    # naive pricing
-    price_map = {1: 1499.99, 2: 799.99, 3: 9.99}
-    price = price_map.get(order_in.product_id, 0)
-    total = round(price * order_in.quantity, 2)
+    total = round(order_in.product.price * order_in.quantity, 2)
     order_id = str(uuid4())
-    order = Order(id=order_id, product_id=order_in.product_id, quantity=order_in.quantity, total=total, status="created")
+    order = Order(
+        id=order_id,
+        product=order_in.product,
+        quantity=order_in.quantity,
+        total=total,
+        status="created"
+    )
     orders[order_id] = order
     return order
 

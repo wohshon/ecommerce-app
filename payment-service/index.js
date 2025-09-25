@@ -15,6 +15,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', service: 'payment' }))
 
 // Mock payment endpoint
 app.post('/pay', (req, res) => {
+    console.log('Payment request body:', req.body);
     const { orderId, amount } = req.body;
     if (!orderId || !amount) return res.status(400).json({ error: 'orderId and amount required' });
     const transaction = {
