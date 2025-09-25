@@ -10,7 +10,7 @@ function Home() {
   const [products, setProducts] = useState([]);
   const [orderResp, setOrderResp] = useState(null);
   const [quantities, setQuantities] = useState({}); // track quantities for each product
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({});
 
   useEffect(() => {
     fetch(PRODUCT_SERVICE_URL)
@@ -26,7 +26,7 @@ function Home() {
 
   async function buy(product) {
     const qty = quantities[product.id] || 1;
-    setLoading(true);
+    setLoading(prev => ({ ...prev, [product.id]: true }));
 
     try {
       console.log(`Creating order for ${product.name}, Qty: ${qty}`);
@@ -61,7 +61,8 @@ function Home() {
       console.error("Transaction failed:", err);
       setOrderResp({ error: err.message });
     } finally {
-      setLoading(false);
+      // ✅ Clear loading for this product only
+      setLoading(prev => ({ ...prev, [product.id]: false }));
     }
   }
 
@@ -127,9 +128,9 @@ function Home() {
                   borderRadius: 4,
                   cursor: "pointer"
                 }}
-                disabled={loading}
+                disabled={loading[p.id]} // ✅ disable only the clicked button
               >
-                {loading ? "Processing..." : "Buy"}
+                {loading[p.id] ? "Processing..." : "Buy"}
               </button>
             </div>
           ))}
