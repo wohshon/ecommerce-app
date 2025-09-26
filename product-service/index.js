@@ -10,6 +10,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 8081;
 const HOST = process.env.HOST || `http://localhost:${PORT}`;
+console.log(`HOST is ${HOST}`);
 // simple in-memory products
 const products = [
   { id: 1, name: "Laptop", price: 1499.99, image: `${HOST}/images/laptop.png` },
