@@ -5,7 +5,7 @@ const app = express();
 const frontendUrls = process.env.FRONTEND_URLS || "http://localhost:3000";
 const origins = frontendUrls.split(",").map(u => u.trim());
 app.use(cors({ origin: origins }));
-// serve images under /api/product/images
+
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use(express.json());
@@ -14,15 +14,7 @@ const PORT = process.env.PORT || 8081;
 const HOST = process.env.HOST || `http://localhost:${PORT}`;
 console.log(`HOST is ${HOST}`);
 // simple in-memory products
-/*
-const products = [
-  { id: 1, name: "Laptop", price: 1499.99, image: `${HOST}/images/laptop.png` },
-  { id: 2, name: "Phone",  price: 799.99,  image: `${HOST}/images/phone.png` },
-  { id: 3, name: "Mug",    price: 9.99,    image: `${HOST}/images/mug.jpg` },
-  { id: 4, name: "Headphones", price: 199.99, image: `${HOST}/images/headphones.jpg` },
-  { id: 5, name: "Smartwatch", price: 299.99, image: `${HOST}/images/smartwatch.jpg` },
-  { id: 6, name: "Tablet", price: 499.99, image: `${HOST}/images/tablet.png` }
-];*/
+
 const products = [
   { id: 1, name: "Laptop", price: 1499.99, image: "images/laptop.png" },
   { id: 2, name: "Phone",  price: 799.99,  image: "images/phone.png" },

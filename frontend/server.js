@@ -10,6 +10,9 @@ const ORDER_SERVICE = process.env.ORDER_SERVICE || 'http://localhost:8082';
 const PAYMENT_SERVICE = process.env.PAYMENT_SERVICE || 'http://localhost:8083';
 const FRONTEND_PORT = process.env.PORT || 80;
 
+const PRODUCT_IMAGE_BASE = process.env.PRODUCT_IMAGE_BASE || "";
+
+
 // Proxy Product service (API + images)
 app.use(
   '/api/product',
@@ -18,8 +21,8 @@ app.use(
     changeOrigin: true,
     pathRewrite: (path, req) => {
       // Rewrite /api/product/images/... -> /images/... on product service
-      if (path.startsWith('/api/product/images')) {
-        return path.replace('/api/product/images', '/images');
+      if (path.startsWith('/api/product/images') && PRODUCT_IMAGE_BASE) {
+        return path.replace('/api/product/images', PRODUCT_IMAGE_BASE);
       }
       // All other /api/product/... requests
       return path.replace('/api/product', '');
