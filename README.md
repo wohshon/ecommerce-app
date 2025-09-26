@@ -118,6 +118,7 @@ node server.js # start the server side + load static file in build
 
 ### order service 
 
+#### Local test
 ```
 uvicorn main:app --host 0.0.0.0 --port 8082
 
@@ -133,4 +134,12 @@ docker run -d \
 docker exec -it postgres-local psql -U order_user -d orderdb
 
 orderdb=# \d
+```
+
+#### K8s
+
+db deinition (secrets and pvc request all in )
+```
+dn/order-postgres.yaml
+
 ```
