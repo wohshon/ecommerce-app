@@ -3,8 +3,20 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from uuid import uuid4
 from fastapi.middleware.cors import CORSMiddleware
+# Add these for database
+from db import database
+from models import orders
 
 app = FastAPI(title="order-service")
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
 
 # Read FRONTEND_URLS from environment variable, fallback to localhost
 frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:3000")
@@ -19,8 +31,6 @@ app.add_middleware(
 )
 PORT = 8082  # not used directly, we map in Dockerfile
 
-# In-memory orders store
-orders = {}
 
 class Product(BaseModel):
     id: int
@@ -42,26 +52,71 @@ def health():
     return {"status": "ok", "service": "order"}
 
 @app.post("/orders", response_model=Order)
-def create_order(order_in: OrderIn):
+async def create_order(order_in: OrderIn):
     total = round(order_in.product.price * order_in.quantity, 2)
     order_id = str(uuid4())
-    order = Order(
+
+    query = orders.insert().values(
+        id=order_id,
+        product_id=order_in.product.id,
+        product_name=order_in.product.name,
+        price=order_in.product.price,
+        quantity=order_in.quantity,
+        total=total,
+        status="created"
+    )
+    await database.execute(query)
+
+    return Order(
         id=order_id,
         product=order_in.product,
         quantity=order_in.quantity,
         total=total,
         status="created"
     )
-    orders[order_id] = order
-    return order
 
 @app.get("/orders/{order_id}", response_model=Order)
-def get_order(order_id: str):
-    order = orders.get(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="order not found")
-    return order
+async def get_order(order_id: str):
+    query = orders.select().where(orders.c.id == order_id)
+    result = await database.fetch_one(query)
 
-@app.get("/orders")
-def list_orders():
-    return list(orders.values())
+    if not result:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    product = Product(
+        id=result["product_id"],
+        name=result["product_name"],
+        price=result["price"],
+        image=""  # image is not stored in DB yet
+    )
+
+    return Order(
+        id=result["id"],
+        product=product,
+        quantity=result["quantity"],
+        total=result["total"],
+        status=result["status"]
+    )
+
+
+@app.get("/orders", response_model=list[Order])
+async def list_orders():
+    query = orders.select()
+    results = await database.fetch_all(query)
+
+    return [
+        Order(
+            id=row["id"],
+            product=Product(
+                id=row["product_id"],
+                name=row["product_name"],
+                price=row["price"],
+                image=""  # optional placeholder
+            ),
+            quantity=row["quantity"],
+            total=row["total"],
+            status=row["status"]
+        )
+        for row in results
+    ]
+

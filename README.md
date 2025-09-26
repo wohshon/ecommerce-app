@@ -115,3 +115,22 @@ then run
 node server.js # start the server side + load static file in build
 
 ```
+
+### order service 
+
+```
+uvicorn main:app --host 0.0.0.0 --port 8082
+
+
+docker run -d \
+  --name postgres-local \
+  -e POSTGRES_USER=order_user \
+  -e POSTGRES_PASSWORD=order_pass \
+  -e POSTGRES_DB=orderdb \
+  -p 5432:5432 \
+  postgres
+
+docker exec -it postgres-local psql -U order_user -d orderdb
+
+orderdb=# \d
+```
