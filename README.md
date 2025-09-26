@@ -131,6 +131,8 @@ docker run -d \
   -p 5432:5432 \
   postgres
 
+docker rm postgres-local
+
 docker exec -it postgres-local psql -U order_user -d orderdb
 
 orderdb=# \d

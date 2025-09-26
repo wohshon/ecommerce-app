@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import "../App.css"; // global styles
 
 // API endpoints (proxied via Node.js server)
-const PRODUCT_SERVICE_URL = "/api/product/products";
+const PRODUCT_SERVICE_BASE = process.env.REACT_APP_PRODUCT_BASE || "";
+const PRODUCT_SERVICE_URL = `${PRODUCT_SERVICE_BASE}/api/product/products`;
+//const PRODUCT_SERVICE_URL = "/api/product/products";
 const ORDER_SERVICE_URL = "/api/order/orders";
 const PAYMENT_SERVICE_URL = "/api/payment/pay";
 
@@ -93,11 +95,12 @@ function Home() {
                 boxShadow: "2px 2px 6px rgba(0,0,0,0.1)"
               }}
             >
-              <img
-                src={p.image}
-                alt={p.name}
-                style={{ width: "100%", borderRadius: 4, marginBottom: 8 }}
-              />
+            <img
+              src={`/api/product/images/${p.image.split('/').pop()}`} // use proxy for images
+              alt={p.name}
+              style={{ width: "100%", borderRadius: 4, marginBottom: 8 }}
+            />
+
               <h3>{p.name}</h3>
               <p style={{ fontWeight: "bold" }}>${p.price.toFixed(2)}</p>
 
