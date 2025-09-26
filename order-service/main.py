@@ -6,12 +6,20 @@ from fastapi.middleware.cors import CORSMiddleware
 # Add these for database
 from db import database
 from models import orders
+import sqlalchemy
+from db import DATABASE_URL
 
 app = FastAPI(title="order-service")
 
 @app.on_event("startup")
 async def startup():
     await database.connect()
+    
+    # Create table if missing
+    engine = sqlalchemy.create_engine(DATABASE_URL)
+    metadata = orders.metadata
+    metadata.create_all(engine)
+
 
 @app.on_event("shutdown")
 async def shutdown():
