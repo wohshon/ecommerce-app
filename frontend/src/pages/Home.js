@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
-import "../App.css"; // global styles
+import "../App.css";
 
 // API endpoints (proxied via Node.js server)
 const PRODUCT_SERVICE_BASE = process.env.REACT_APP_PRODUCT_BASE || "";
 const PRODUCT_SERVICE_URL = `${PRODUCT_SERVICE_BASE}/api/product/products`;
-//const PRODUCT_SERVICE_URL = "/api/product/products";
 const ORDER_SERVICE_URL = "/api/order/orders";
 const PAYMENT_SERVICE_URL = "/api/payment/pay";
 
 function Home() {
   const [products, setProducts] = useState([]);
-  const [orderResp, setOrderResp] = useState(null);
-  const [quantities, setQuantities] = useState({}); // track quantities for each product
+  const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState({});
+  const [orderResp, setOrderResp] = useState(null);
+  const [allOrders, setAllOrders] = useState([]);
 
+  // Fetch products
   useEffect(() => {
     fetch(PRODUCT_SERVICE_URL)
       .then(r => r.json())
@@ -21,8 +22,24 @@ function Home() {
       .catch(err => console.error("Product fetch error:", err));
   }, []);
 
+  // Fetch all orders
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch(ORDER_SERVICE_URL);
+      if (!res.ok) throw new Error("Failed to fetch orders");
+      const data = await res.json();
+      setAllOrders(data);
+    } catch (err) {
+      console.error("Orders fetch error:", err);
+    }
+  };
+
   const handleQuantityChange = (productId, value) => {
-    const qty = Math.max(1, parseInt(value) || 1); // minimum 1
+    const qty = Math.max(1, parseInt(value) || 1);
     setQuantities(prev => ({ ...prev, [productId]: qty }));
   };
 
@@ -33,11 +50,11 @@ function Home() {
     try {
       console.log(`Creating order for ${product.name}, Qty: ${qty}`);
 
-      // Step 1: Create the order
+      // Step 1: Create order
       const order = await fetch(ORDER_SERVICE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product: product, quantity: qty })
+        body: JSON.stringify({ product, quantity: qty }),
       }).then(r => {
         if (!r.ok) throw new Error(`Order service error: ${r.status}`);
         return r.json();
@@ -49,7 +66,7 @@ function Home() {
       const payment = await fetch(PAYMENT_SERVICE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id, amount: order.total })
+        body: JSON.stringify({ orderId: order.id, amount: order.total }),
       }).then(r => {
         if (!r.ok) throw new Error(`Payment service error: ${r.status}`);
         return r.json();
@@ -57,13 +74,15 @@ function Home() {
 
       console.log("Payment processed:", payment);
 
-      // Update UI with both order and payment
+      // Update UI
       setOrderResp({ order, payment });
+
+      // Refresh all orders table
+      fetchOrders();
     } catch (err) {
       console.error("Transaction failed:", err);
       setOrderResp({ error: err.message });
     } finally {
-      // ✅ Clear loading for this product only
       setLoading(prev => ({ ...prev, [product.id]: false }));
     }
   }
@@ -80,7 +99,7 @@ function Home() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "20px"
+            gap: "20px",
           }}
         >
           {products.map(p => (
@@ -92,35 +111,32 @@ function Home() {
                 padding: 10,
                 textAlign: "center",
                 background: "#fff",
-                boxShadow: "2px 2px 6px rgba(0,0,0,0.1)"
+                boxShadow: "2px 2px 6px rgba(0,0,0,0.1)",
               }}
             >
-            <img
-              src={`/api/product/images/${p.image.split('/').pop()}`} // use proxy for images
-              alt={p.name}
-              style={{ width: "100%", borderRadius: 4, marginBottom: 8 }}
-            />
-
+              <img
+                src={`/api/product/images/${p.image.split("/").pop()}`}
+                alt={p.name}
+                style={{ width: "100%", borderRadius: 4, marginBottom: 8 }}
+              />
               <h3>{p.name}</h3>
               <p style={{ fontWeight: "bold" }}>${p.price.toFixed(2)}</p>
 
-              {/* Quantity input */}
               <div style={{ marginBottom: 8 }}>
                 <input
                   type="number"
                   min="1"
                   value={quantities[p.id] || 1}
-                  onChange={(e) => handleQuantityChange(p.id, e.target.value)}
+                  onChange={e => handleQuantityChange(p.id, e.target.value)}
                   style={{
                     width: "60px",
                     padding: "4px",
                     textAlign: "center",
-                    marginRight: "8px"
+                    marginRight: "8px",
                   }}
                 />
               </div>
 
-              {/* Buy button */}
               <button
                 onClick={() => buy(p)}
                 style={{
@@ -129,9 +145,9 @@ function Home() {
                   border: "none",
                   padding: "8px 12px",
                   borderRadius: 4,
-                  cursor: "pointer"
+                  cursor: "pointer",
                 }}
-                disabled={loading[p.id]} // ✅ disable only the clicked button
+                disabled={loading[p.id]}
               >
                 {loading[p.id] ? "Processing..." : "Buy"}
               </button>
@@ -147,7 +163,7 @@ function Home() {
             marginTop: 20,
             padding: 10,
             background: "#e7f5ff",
-            borderRadius: 6
+            borderRadius: 6,
           }}
         >
           <h3>Transaction Summary</h3>
@@ -162,6 +178,50 @@ function Home() {
               <pre>{JSON.stringify(orderResp.payment, null, 2)}</pre>
             </div>
           )}
+        </div>
+      )}
+
+      {/* All orders table - bottom right */}
+      {allOrders.length > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            width: 400,
+            maxHeight: 300,
+            overflowY: "auto",
+            background: "#f9f9f9",
+            border: "1px solid #ccc",
+            borderRadius: 6,
+            padding: 10,
+            boxShadow: "2px 2px 6px rgba(0,0,0,0.2)",
+            fontSize: 12,
+          }}
+        >
+          <h4 style={{ marginTop: 0 }}>All Orders</h4>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>ID</th>
+                <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Product</th>
+                <th style={{ borderBottom: "1px solid #ccc", textAlign: "right" }}>Qty</th>
+                <th style={{ borderBottom: "1px solid #ccc", textAlign: "right" }}>Total</th>
+                <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allOrders.map(order => (
+                <tr key={order.id}>
+                  <td>{order.id.slice(0, 6)}...</td>
+                  <td>{order.product.name}</td>
+                  <td style={{ textAlign: "right" }}>{order.quantity}</td>
+                  <td style={{ textAlign: "right" }}>${order.total.toFixed(2)}</td>
+                  <td>{order.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
