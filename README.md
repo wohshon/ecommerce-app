@@ -136,6 +136,9 @@ docker rm postgres-local
 docker exec -it postgres-local psql -U order_user -d orderdb
 
 orderdb=# \d
+
+order-service % uvicorn main:app --host 0.0.0.0 --port 8082
+
 ```
 
 #### K8s
@@ -143,5 +146,7 @@ orderdb=# \d
 db deinition (secrets and pvc request all in )
 ```
 dn/order-postgres.yaml
+
+docker exec -it postgres-local psql -U order_user -d orderdb 
 
 ```
