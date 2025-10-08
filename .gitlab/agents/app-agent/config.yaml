@@ -1,0 +1,5 @@
+ci_access:
+
+ projects:
+
+   - id: root/ecommerce-app
