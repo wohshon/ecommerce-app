@@ -1,0 +1,151 @@
+stages:
+  - build
+  - trigger
+
+image: docker:24.0.7
+services:
+  - name: docker:24-dind
+
+variables:
+  GIT_SSL_NO_VERIFY: "true"
+  REGISTRY_URL: "registry.wskn.local"
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
+  CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
+  INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
+
+# ----------------------
+# Build Jobs
+# ----------------------
+
+build-frontend:
+  stage: build
+  before_script:
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest
+    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest)
+    - echo "SERVICE_NAME=frontend" >> frontend.env
+    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> frontend.env
+  artifacts:
+    paths:
+      - frontend.env
+    reports:
+      dotenv: frontend.env
+  rules:
+    - changes:
+        - frontend/**/*
+
+build-order-service:
+  stage: build
+  before_script:
+  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
+    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest)
+    - echo "SERVICE_NAME=order-service" >> order.env
+    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> order.env
+  artifacts:
+    paths:
+      - order.env
+    reports:
+      dotenv: order.env
+  rules:
+    - changes:
+        - order-service/**/*
+
+build-payment-service:
+  stage: build
+  before_script:
+  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
+    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest)
+    - echo "SERVICE_NAME=payment-service" >> payment.env
+    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> payment.env
+  artifacts:
+    paths:
+      - payment.env
+    reports:
+      dotenv: payment.env
+  rules:
+    - changes:
+        - payment-service/**/*
+
+build-product-service:
+  stage: build
+  before_script:
+  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
+    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest)
+    - echo "SERVICE_NAME=product-service" >> product.env
+    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> product.env
+  artifacts:
+    paths:
+      - product.env
+    reports:
+      dotenv: product.env
+  rules:
+    - changes:
+        - product-service/**/*
+
+# ----------------------
+# Trigger infra for any built service
+# ----------------------
+trigger-infra:
+  stage: trigger
+  image: curlimages/curl:latest
+  variables:
+    CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
+    INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
+  dependencies:
+    - build-frontend
+    - build-order-service
+    - build-payment-service
+    - build-product-service
+  needs:
+    - job: build-frontend
+      optional: true
+    - job: build-order-service
+      optional: true
+    - job: build-payment-service
+      optional: true
+    - job: build-product-service
+      optional: true
+  script:
+    - "echo $REGISTRY_URL"
+    - "echo $DOCKER_USERNAME"
+    - "echo $IMAGE_DIGEST"
+    - "echo $CI_API_V4_URL"
+    - "echo $INFRA_PROJECT_ID"
+    - "echo $SERVICE_NAME"
+    - "echo"
+    - |
+      echo "Checking built services to trigger infra pipeline..."
+      for artifact in frontend.env order.env payment.env product.env; do
+        if [ -f "$artifact" ]; then
+          echo "found artifact -  $artifact"
+          source "$artifact"
+          if [ -n "$SERVICE_NAME" ] && [ -n "$IMAGE_DIGEST" ]; then
+            echo "Triggering infra pipeline for $SERVICE_NAME..."
+            curl -k -X POST \
+              -F token=$TRIGGER_TOKEN \
+              -F ref=dev \
+              -F "variables[SERVICE_NAME]=$SERVICE_NAME" \
+              -F "variables[APP_IMAGE]=$IMAGE_DIGEST" \
+              "$CI_API_V4_URL/projects/$INFRA_PROJECT_ID/trigger/pipeline"
+          fi
+        fi
+      done
+  rules:
+    - when: always
+
