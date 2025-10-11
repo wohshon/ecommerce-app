@@ -18,10 +18,10 @@ console.log(`HOST is ${HOST}`);
 const products = [
   { id: 1, name: "Laptop", price: 1499.99, image: "images/laptop.png" },
   { id: 2, name: "Phone",  price: 799.99,  image: "images/phone.png" },
-  { id: 3, name: "Mug",    price: 9.99,    image: "images/mug.jpg" },
-  { id: 4, name: "Headphones", price: 199.99, image: "images/headphones.jpg" },
-  { id: 5, name: "Smartwatch", price: 299.99, image: "images/smartwatch.jpg" },
-  { id: 6, name: "Tablet", price: 499.99, image: "images/tablet.png" }
+  // { id: 3, name: "Mug",    price: 9.99,    image: "images/mug.jpg" },
+  { id: 3, name: "Headphones", price: 199.99, image: "images/headphones.png" },
+  { id: 4, name: "Smartwatch", price: 299.99, image: "images/smartwatch.png" },
+  { id: 5, name: "Tablet", price: 499.99, image: "images/tablet.png" }
 ];
 
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'product' }));
