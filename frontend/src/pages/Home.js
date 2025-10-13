@@ -162,7 +162,7 @@ function Home() {
           style={{
             marginTop: 20,
             padding: 10,
-            background: "#e7f5ff",
+            background: "#f7f8f9ff",
             borderRadius: 6,
           }}
         >
