@@ -5,7 +5,7 @@ stages:
 image: docker:24.0.7
 services:
   - name: docker:24-dind
-    command: ["--insecure-registry=wskn.local"]
+    command: ["--insecure-registry=registry.wskn.local"]
 
 
 variables:
