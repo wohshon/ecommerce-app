@@ -47,13 +47,12 @@ build-frontend:
 build-order-service:
   stage: build
   before_script:
-  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  #- mkdir -p /etc/docker/certs.d/wskn.local
-  #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-  # specified in runners yaml
-  - cp /tmp/ca.crt /usr/local/share/ca-certificates/
-  - update-ca-certificates || true  
+    - cp /tmp/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
@@ -72,12 +71,12 @@ build-order-service:
 build-payment-service:
   stage: build
   before_script:
-  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - mkdir -p /etc/docker/certs.d/wskn.local
-  #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-  - cp /tmp/ca.crt /usr/local/share/ca-certificates/
-  - update-ca-certificates || true
+    - cp /tmp/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
@@ -96,12 +95,12 @@ build-payment-service:
 build-product-service:
   stage: build
   before_script:
-  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  #- mkdir -p /etc/docker/certs.d/wskn.local
-  #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-  - cp /tmp/ca.crt /usr/local/share/ca-certificates/
-  - update-ca-certificates || true    
+    - cp /tmp/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt    
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
