@@ -16,7 +16,7 @@ console.log(`HOST is ${HOST}`);
 // simple in-memory products
 
 const products = [
-  { id: 1, name: "Laptop", price: 1099.99, image: "images/laptop.png" },
+  { id: 1, name: "Laptop", price: 1899.99, image: "images/laptop.png" },
   { id: 2, name: "Phone",  price: 799.99,  image: "images/phone.png" },
   // { id: 3, name: "Mug",    price: 9.99,    image: "images/mug.jpg" },
   { id: 3, name: "Headphones", price: 199.99, image: "images/headphones.png" },
