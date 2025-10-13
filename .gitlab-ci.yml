@@ -27,6 +27,7 @@ build-frontend:
     - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    - chmod 1777 /tmp
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
@@ -51,6 +52,7 @@ build-order-service:
     - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    - chmod 1777 /tmp
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
@@ -75,6 +77,7 @@ build-payment-service:
     - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    - chmod 1777 /tmp
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
@@ -99,6 +102,7 @@ build-product-service:
     - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    - chmod 1777 /tmp
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt    
   script:
