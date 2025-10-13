@@ -5,6 +5,8 @@ stages:
 image: docker:24.0.7
 services:
   - name: docker:24-dind
+    command: ["--insecure-registry=registry.wskn.local"]
+
 
 variables:
   GIT_SSL_NO_VERIFY: "true"
@@ -21,8 +23,12 @@ variables:
 build-frontend:
   stage: build
   before_script:
+    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest
@@ -41,8 +47,12 @@ build-frontend:
 build-order-service:
   stage: build
   before_script:
-  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
@@ -61,8 +71,12 @@ build-order-service:
 build-payment-service:
   stage: build
   before_script:
-  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
@@ -81,8 +95,12 @@ build-payment-service:
 build-product-service:
   stage: build
   before_script:
-  - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+    - update-ca-certificates || true      
+    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    #- mkdir -p /etc/docker/certs.d/wskn.local
+    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt    
   script:
     - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
     - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
@@ -104,6 +122,7 @@ build-product-service:
 trigger-infra:
   stage: trigger
   image: curlimages/curl:latest
+  # image: alpine:latest
   variables:
     CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
     INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
@@ -121,6 +140,8 @@ trigger-infra:
       optional: true
     - job: build-product-service
       optional: true
+  before_script:
+    - echo "triggering infra pipeline"   
   script:
     - "echo $REGISTRY_URL"
     - "echo $DOCKER_USERNAME"
