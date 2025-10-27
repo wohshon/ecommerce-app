@@ -185,7 +185,7 @@ run-unit-tests:
     - apt-get update && apt-get install -y jq
   script:
     - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
-    - echo "Running unit tests for: $UNIT_TESTS (simulated)"
+    - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
     - |
       for service in $UNIT_TESTS; do
         echo "Unit tests for $service executed (simulated)"
@@ -205,7 +205,7 @@ run-integration-tests:
     - apt-get update && apt-get install -y jq
   script:
     - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
-    - echo "Running integration tests for: $INTEGRATION_TESTS (simulated)"
+    - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
     - |
       for service in $INTEGRATION_TESTS; do
         echo "Integration tests for $service executed (simulated)"
