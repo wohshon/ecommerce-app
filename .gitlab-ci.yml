@@ -184,10 +184,21 @@ ai-risk-analysis:
 
       # Validate JSON, fallback if invalid
       echo "$RESPONSE" | jq '.' > test_selection.json || echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
+      # --------- NEW: generate skip flag ---------
+      UNIT_COUNT=$(jq '.unit_tests | length' test_selection.json)
+      INTEG_COUNT=$(jq '.integration_tests | length' test_selection.json)
+
+      if [ "$UNIT_COUNT" -eq 0 ] && [ "$INTEG_COUNT" -eq 0 ]; then
+        echo "No tests required → creating skip_tests.flag"
+        touch skip_tests.flag
+      else
+        echo "Tests required → no skip flag created"
+      fi
 
   artifacts:
     paths:
       - test_selection.json
+      - skip_tests.flag
 
 # ----------------------
 # Simulated Unit Test Job
@@ -208,9 +219,10 @@ run-unit-tests:
         echo "Unit tests for $service executed (simulated)"
       done
   rules:
-    - if: '$CI_JOB_NAME == "run-unit-tests" && $(jq -r ".unit_tests | length" test_selection.json) > 0'
-      when: always
-    - when: never
+    - exists:
+        - skip_tests.flag
+      when: never
+    - when: always
 
 # ----------------------
 # Simulated Integration Test Job
@@ -235,9 +247,10 @@ run-integration-tests:
         fi
       done
   rules:
-    - if: '$CI_JOB_NAME == "run-integration-tests" && $(jq -r ".integration_tests | length" test_selection.json) > 0'
-      when: always
-    - when: never
+    - exists:
+        - skip_tests.flag
+      when: never
+    - when: always
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
