@@ -194,7 +194,6 @@ ai-review:
           echo "Build Log:"
           echo "$BUILD_LOG"
           # Send to AI endpoint
-          echo "Sending build log to AI endpoint for analysis..."
         fi
       done
   variables:
