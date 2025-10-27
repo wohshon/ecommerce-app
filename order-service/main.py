@@ -62,12 +62,6 @@ class Order(OrderIn):
 def health():
     return {"status": "ok", "service": "order"}
 
-# health check2 for testing purpose
-@app.get("/health2")
-def health():
-    return {"status": "ok", "service": "order"}
-
-
 @app.post("/orders", response_model=Order)
 async def create_order(order_in: OrderIn):
     total = round(order_in.product.price * order_in.quantity, 2)
