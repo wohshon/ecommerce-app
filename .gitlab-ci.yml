@@ -153,6 +153,8 @@ ai-risk-analysis:
       Example: {\"unit_tests\":[], \"integration_tests\":[]} 
       Always ensure it is valid JSON."
 
+      echo $AI_ENDPOINT_URL
+      echo $AI_API_KEY
       RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $AI_API_KEY" \
