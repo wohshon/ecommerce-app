@@ -162,10 +162,16 @@ ai-risk-analysis:
             {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
             {\"role\": \"user\", \"content\": \"$PROMPT\"}
           ]
-        }" | jq -c '.choices[0].message.content // "{\"unit_tests\":[],\"integration_tests\":[]}"')
+        }" | jq -r '.choices[0].message.content')
 
-      echo $RESPONSE
-      echo $RESPONSE > test_selection.json
+      # Strip surrounding quotes if returned as string
+      RESPONSE=$(echo "$RESPONSE" | sed 's/^"\(.*\)"$/\1/' | sed 's/\\"/"/g')
+
+      if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
+        RESPONSE='{"unit_tests":[],"integration_tests":[]}'
+      fi
+
+      echo "$RESPONSE" > test_selection.json
   artifacts:
     paths:
       - test_selection.json
