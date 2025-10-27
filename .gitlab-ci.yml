@@ -1,5 +1,6 @@
 stages:
   - build
+  - ai_analyze
   - ai_decide_tests
   - trigger
 
@@ -116,9 +117,7 @@ build-product-service:
   rules:
     - changes:
         - product-service/**/*
-# ----------------------
-# AI Risk Analysis Job
-# ----------------------
+
 # ----------------------
 # AI Risk Analysis Job
 # ----------------------
@@ -173,44 +172,43 @@ ai-risk-analysis:
   artifacts:
     paths:
       - test_selection.json
-
 # ----------------------
 # Simulated Unit Test Job
 # ----------------------
 run-unit-tests:
   stage: ai_decide_tests
   image: python:3.11
-  dependencies:
-    - ai-risk-analysis
+  needs:
+    - job: ai-risk-analysis
+      artifacts: true
   before_script:
     - apt-get update && apt-get install -y jq
   script:
     - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
-    - "echo 'Running unit tests for: $UNIT_TESTS (simulated)'"
+    - echo "Running unit tests for: $UNIT_TESTS (simulated)"
     - |
       for service in $UNIT_TESTS; do
         echo "Unit tests for $service executed (simulated)"
       done
   rules:
     - when: always
-
 # ----------------------
 # Simulated Integration Test Job
 # ----------------------
 run-integration-tests:
   stage: ai_decide_tests
   image: python:3.11
-  dependencies:
-    - ai-risk-analysis
+  needs:
+    - job: ai-risk-analysis
+      artifacts: true
   before_script:
     - apt-get update && apt-get install -y jq
   script:
     - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
-    - "echo 'Running integration tests for: $INTEGRATION_TESTS (simulated)'"
+    - echo "Running integration tests for: $INTEGRATION_TESTS (simulated)"
     - |
       for service in $INTEGRATION_TESTS; do
         echo "Integration tests for $service executed (simulated)"
-        # simulate high-risk failure for demo
         if [ "$service" = "payment-service" ]; then
           echo "🚨 High-risk test failed for $service!"
           exit 1
