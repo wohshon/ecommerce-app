@@ -140,10 +140,12 @@ ai-risk-analysis:
       else
         echo "Changed Diff: $CHANGED_DIFF"
       fi
+      
+      ESCAPED_DIFF=$(printf '%s' "$CHANGED_DIFF" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
       PROMPT="You are a CI/CD assistant. Based on these changed files:
 
-      $CHANGED_DIFF
+      $ESCAPED_DIFF
 
       Classify risk per file:
       - Low: comment-only → skip tests
