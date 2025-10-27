@@ -127,8 +127,11 @@ ai-risk-analysis:
     - pip install jq requests
   script:
     - echo "Collecting changed files..."
-    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH
-    - CHANGED_FILES=$(git diff --name-only origin/$CI_MERGE_REQUEST_TARGET_BRANCH)
+    # fallback to main if no MR target
+    - TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-main}
+    - echo "Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)"
+    - git fetch origin $TARGET_BRANCH
+    - CHANGED_FILES=$(git diff --name-only origin/$TARGET_BRANCH...HEAD || echo "")
     - "echo 'Changed files: $CHANGED_FILES'"
     - |
       PROMPT="You are a CI/CD assistant. Based on these changed files:
@@ -255,4 +258,3 @@ trigger-infra:
       done
   rules:
     - when: always
-
