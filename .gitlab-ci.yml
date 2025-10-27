@@ -124,7 +124,8 @@ ai-risk-analysis:
   stage: ai_decide_tests
   image: python:3.11
   before_script:
-    - pip install jq requests
+    - apt-get update && apt-get install -y jq curl git
+    - pip install requests
   script:
     - echo "Collecting changed files..."
     # find a valid target branch
@@ -162,7 +163,6 @@ ai-risk-analysis:
   artifacts:
     paths:
       - test_selection.json
-
 # ----------------------
 # Simulated Unit Test Job
 # ----------------------
