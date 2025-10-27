@@ -1,6 +1,6 @@
 stages:
   - build
-  - ai_review
+  - ai_decide_tests
   - trigger
 
 image: docker:24.0.7
@@ -118,6 +118,91 @@ build-product-service:
         - product-service/**/*
 
 # ----------------------
+# AI Risk Analysis Job
+# ----------------------
+ai-risk-analysis:
+  stage: ai_decide_tests
+  image: python:3.11
+  before_script:
+    - pip install jq requests
+  script:
+    - echo "Collecting changed files..."
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH
+    - CHANGED_FILES=$(git diff --name-only origin/$CI_MERGE_REQUEST_TARGET_BRANCH)
+    - "echo 'Changed files: $CHANGED_FILES'"
+    - |
+      PROMPT="You are a CI/CD assistant. Based on these changed files:
+
+        $CHANGED_FILES
+
+        Classify risk per file:
+        - Low: comment-only → skip tests
+        - Medium: function rename/refactor → run unit tests
+        - High: variable/config/API change → run unit + integration tests
+
+        Respond in JSON format:
+        { \"unit_tests\": [], \"integration_tests\": [] }"
+            - |
+              RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer $AI_API_KEY" \
+                -d "{
+                  \"model\": \"qwen3-coder-30b-a3b\",
+                  \"messages\": [
+                    {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
+                    {\"role\": \"user\", \"content\": \"$PROMPT\"}
+                  ]
+                }" | jq -r '.choices[0].message.content')
+    - echo "AI Risk Analysis Response:"
+    - echo "$RESPONSE"
+    - echo "$RESPONSE" > test_selection.json
+  artifacts:
+    paths:
+      - test_selection.json
+
+# ----------------------
+# Simulated Unit Test Job
+# ----------------------
+run-unit-tests:
+  stage: ai_decide_tests
+  image: alpine:latest
+  dependencies:
+    - ai-risk-analysis
+  script:
+    - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
+    - "echo 'Running unit tests for: $UNIT_TESTS (simulated)'"
+    - |
+      for service in $UNIT_TESTS; do
+        echo "Unit tests for $service executed (simulated)"
+      done
+  rules:
+    - when: always
+
+# ----------------------
+# Simulated Integration Test Job
+# ----------------------
+run-integration-tests:
+  stage: ai_decide_tests
+  image: alpine:latest
+  dependencies:
+    - ai-risk-analysis
+  script:
+    - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
+    - "echo 'Running integration tests for: $INTEGRATION_TESTS (simulated)'"
+    - |
+      for service in $INTEGRATION_TESTS; do
+        echo "Integration tests for $service executed (simulated)"
+        # simulate high-risk failure for demo
+        if [ "$service" = "payment-service" ]; then
+          echo "🚨 High-risk test failed for $service!"
+          exit 1
+        fi
+      done
+  rules:
+    - when: always
+
+
+# ----------------------
 # Trigger infra for any built service
 # ----------------------
 trigger-infra:
@@ -171,46 +256,3 @@ trigger-infra:
   rules:
     - when: always
 
-# ----------------------
-# AI Build Review Job
-# ----------------------
-ai-review:
-  stage: ai_review
-  image: curlimages/curl:latest
-  script:
-    - echo "Running AI Build Review..."
-    - |
-      for artifact in frontend.env order.env payment.env product.env; do
-        if [ -f "$artifact" ]; then
-          source "$artifact"
-          echo "Analyzing build for $SERVICE_NAME..."
-          # Read the last build logs
-          LOG_FILE="${SERVICE_NAME}_build.log"
-          if [ -f "$LOG_FILE" ]; then
-            BUILD_LOG=$(tail -n 100 "$LOG_FILE")
-          else
-            BUILD_LOG="Build completed for $SERVICE_NAME, image: $IMAGE_DIGEST"
-          fi
-          echo "Build Log:"
-          echo "$BUILD_LOG"
-          # Send to AI endpoint
-        fi
-      done
-  variables:
-    AI_ENDPOINT_URL: "https://<your-private-ai-endpoint>/v1/chat/completions"
-  dependencies:
-    - build-frontend
-    - build-order-service
-    - build-payment-service
-    - build-product-service
-  needs:
-    - job: build-frontend
-      optional: true
-    - job: build-order-service
-      optional: true
-    - job: build-payment-service
-      optional: true
-    - job: build-product-service
-      optional: true
-  rules:
-    - when: always
