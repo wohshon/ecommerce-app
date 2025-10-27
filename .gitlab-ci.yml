@@ -127,11 +127,11 @@ ai-risk-analysis:
     - pip install jq requests
   script:
     - echo "Collecting changed files..."
-    # fallback to main if no MR target
-    - TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-main}
+    # find a valid target branch
+    - TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-$(git remote show origin | awk '/HEAD branch/ {print $NF}')}
     - echo "Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)"
-    - git fetch origin $TARGET_BRANCH
-    - CHANGED_FILES=$(git diff --name-only origin/$TARGET_BRANCH...HEAD || echo "")
+    - git fetch origin $TARGET_BRANCH || echo "⚠️ Failed to fetch target branch, continuing with HEAD only"
+    - CHANGED_FILES=$(git diff --name-only origin/$TARGET_BRANCH...HEAD 2>/dev/null || echo "")
     - "echo 'Changed files: $CHANGED_FILES'"
     - |
       PROMPT="You are a CI/CD assistant. Based on these changed files:
