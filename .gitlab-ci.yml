@@ -222,7 +222,7 @@ run-unit-tests:
     - exists:
         - skip_tests.flag
       when: never
-    - when: always
+    - when: on_success 
 
 # ----------------------
 # Simulated Integration Test Job
@@ -250,7 +250,7 @@ run-integration-tests:
     - exists:
         - skip_tests.flag
       when: never
-    - when: always
+    - when: on_success 
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
