@@ -133,10 +133,9 @@ async def list_orders():
     ]
 
 @app.get("/orders", response_model=list[Order])
-async def list_orders():
+async def list_all_orders():
     query = orders.select()
     results = await database.fetch_all(query)
-
     return [
         Order(
             id=row["id"],
