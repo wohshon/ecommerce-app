@@ -149,7 +149,7 @@ ai-risk-analysis:
       - Medium: function rename/refactor → run unit tests
       - High: variable/config/API change → run unit + integration tests
 
-      Respond in JSON format:
+      Respond in JSON format ONLY:
       { \"unit_tests\": [], \"integration_tests\": [] }"
 
             RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
@@ -161,17 +161,18 @@ ai-risk-analysis:
                   {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
                   {\"role\": \"user\", \"content\": \"$PROMPT\"}
                 ]
-              }" | jq -r '.choices[0].message.content | @json')
+              }" | jq -r '.choices[0].message.content' | jq '.' 2>/dev/null)
 
             if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
               RESPONSE='{\"unit_tests\":[],\"integration_tests\":[]}'
             fi
 
             echo "$RESPONSE"
-            echo "$RESPONSE" | jq '.' > test_selection.json
+            echo "$RESPONSE" > test_selection.json
   artifacts:
     paths:
       - test_selection.json
+
 # ----------------------
 # Simulated Unit Test Job
 # ----------------------
@@ -184,14 +185,18 @@ run-unit-tests:
   before_script:
     - apt-get update && apt-get install -y jq
   script:
-    - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
-    - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
     - |
+      if [ ! -f test_selection.json ]; then
+        echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
+      fi
+      UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
+      echo "Running unit tests for: $UNIT_TESTS (simulated)"
       for service in $UNIT_TESTS; do
         echo "Unit tests for $service executed (simulated)"
       done
   rules:
     - when: always
+
 # ----------------------
 # Simulated Integration Test Job
 # ----------------------
@@ -204,9 +209,12 @@ run-integration-tests:
   before_script:
     - apt-get update && apt-get install -y jq
   script:
-    - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
-    - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
     - |
+      if [ ! -f test_selection.json ]; then
+        echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
+      fi
+      INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
+      echo "Running integration tests for: $INTEGRATION_TESTS (simulated)"
       for service in $INTEGRATION_TESTS; do
         echo "Integration tests for $service executed (simulated)"
         if [ "$service" = "payment-service" ]; then
@@ -216,8 +224,6 @@ run-integration-tests:
       done
   rules:
     - when: always
-
-
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
