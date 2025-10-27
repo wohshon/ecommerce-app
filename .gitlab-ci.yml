@@ -149,26 +149,23 @@ ai-risk-analysis:
       - Medium: function rename/refactor → run unit tests
       - High: variable/config/API change → run unit + integration tests
 
-      Respond in JSON format ONLY:
-      { \"unit_tests\": [], \"integration_tests\": [] }"
+      Respond in strict JSON format with only two fields: unit_tests and integration_tests.
+      Example: {\"unit_tests\":[], \"integration_tests\":[]} 
+      Always ensure it is valid JSON."
 
-            RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer $AI_API_KEY" \
-              -d "{
-                \"model\": \"qwen3-coder-30b-a3b\",
-                \"messages\": [
-                  {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
-                  {\"role\": \"user\", \"content\": \"$PROMPT\"}
-                ]
-              }" | jq -r '.choices[0].message.content' | jq '.' 2>/dev/null)
+      RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $AI_API_KEY" \
+        -d "{
+          \"model\": \"qwen3-coder-30b-a3b\",
+          \"messages\": [
+            {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
+            {\"role\": \"user\", \"content\": \"$PROMPT\"}
+          ]
+        }" | jq -c '.choices[0].message.content // "{\"unit_tests\":[],\"integration_tests\":[]}"')
 
-            if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
-              RESPONSE='{\"unit_tests\":[],\"integration_tests\":[]}'
-            fi
-
-            echo "$RESPONSE"
-            echo "$RESPONSE" > test_selection.json
+      echo $RESPONSE
+      echo $RESPONSE > test_selection.json
   artifacts:
     paths:
       - test_selection.json
@@ -185,14 +182,11 @@ run-unit-tests:
   before_script:
     - apt-get update && apt-get install -y jq
   script:
+    - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
+    - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
     - |
-      if [ ! -f test_selection.json ]; then
-        echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
-      fi
-      UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
-      echo "Running unit tests for: $UNIT_TESTS (simulated)"
       for service in $UNIT_TESTS; do
-        echo "Unit tests for $service executed (simulated)"
+        echo Unit tests for $service executed (simulated)
       done
   rules:
     - when: always
@@ -209,16 +203,13 @@ run-integration-tests:
   before_script:
     - apt-get update && apt-get install -y jq
   script:
+    - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
+    - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
     - |
-      if [ ! -f test_selection.json ]; then
-        echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
-      fi
-      INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
-      echo "Running integration tests for: $INTEGRATION_TESTS (simulated)"
       for service in $INTEGRATION_TESTS; do
-        echo "Integration tests for $service executed (simulated)"
+        echo Integration tests for $service executed (simulated)
         if [ "$service" = "payment-service" ]; then
-          echo "🚨 High-risk test failed for $service!"
+          echo 🚨 High-risk test failed for $service!
           exit 1
         fi
       done
@@ -240,6 +231,8 @@ trigger-infra:
     - build-payment-service
     - build-product-service
   needs:
+    - job: run-unit-tests
+    - job: run-integration-tests  
     - job: build-frontend
       optional: true
     - job: build-order-service
