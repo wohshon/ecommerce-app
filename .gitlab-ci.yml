@@ -161,14 +161,14 @@ ai-risk-analysis:
                   {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
                   {\"role\": \"user\", \"content\": \"$PROMPT\"}
                 ]
-              }" | jq -r '.choices[0].message.content')
+              }" | jq -r '.choices[0].message.content | @json')
 
             if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
               RESPONSE='{\"unit_tests\":[],\"integration_tests\":[]}'
             fi
 
             echo "$RESPONSE"
-            echo "$RESPONSE" > test_selection.json
+            echo "$RESPONSE" | jq '.' > test_selection.json
   artifacts:
     paths:
       - test_selection.json
