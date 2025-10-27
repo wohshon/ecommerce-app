@@ -150,11 +150,12 @@ ai-risk-analysis:
       - Medium: function rename/refactor → run unit tests
       - High: variable/config/API change → run unit + integration tests
 
-      Respond with **pure JSON only**, without any Markdown code blocks, quotes, or extra text.
-      Only include the following two fields: unit_tests and integration_tests.
-      Example of valid response: {"unit_tests":["service1"],"integration_tests":["service2"]}
-      Do not include any ```json or ``` or any other formatting characters."
-
+      Respond with pure JSON only.
+      Do NOT include any Markdown, quotes, or code fences.
+      Only include the fields: unit_tests and integration_tests.
+      Example: {\"unit_tests\": [\"service1\"], \"integration_tests\": []}
+      "
+      
       # echo $AI_ENDPOINT_URL
       # echo $AI_API_KEY
       RESPONSE=$(jq -n --arg prompt "$PROMPT" \
