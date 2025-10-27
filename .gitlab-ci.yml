@@ -166,7 +166,8 @@ ai-risk-analysis:
             {\"role\": \"user\", \"content\": \"$PROMPT\"}
           ]
         }")
-
+      ## RAW RESPONSE
+      echo "AI Response: $RESPONSE"
       # Extract content safely and fallback to empty arrays
       RESPONSE=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "{\"unit_tests\":[],\"integration_tests\":[]}"')
 
