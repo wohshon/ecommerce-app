@@ -280,6 +280,7 @@ trigger-infra:
               -F ref=dev \
               -F "variables[SERVICE_NAME]=$SERVICE_NAME" \
               -F "variables[APP_IMAGE]=$IMAGE_DIGEST" \
+              -F "commit_message=$CURRENT_COMMIT_MSG" \
               "$CI_API_V4_URL/projects/$INFRA_PROJECT_ID/trigger/pipeline"
           fi
         fi

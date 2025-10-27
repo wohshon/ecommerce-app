@@ -62,6 +62,12 @@ class Order(OrderIn):
 def health():
     return {"status": "ok", "service": "order"}
 
+# health check2 for testing purpose
+@app.get("/health2")
+def health():
+    return {"status": "ok", "service": "order"}
+
+
 @app.post("/orders", response_model=Order)
 async def create_order(order_in: OrderIn):
     total = round(order_in.product.price * order_in.quantity, 2)
@@ -109,6 +115,28 @@ async def get_order(order_id: str):
         status=result["status"]
     )
 
+
+
+@app.get("/orders", response_model=list[Order])
+async def list_orders():
+    query = orders.select()
+    results = await database.fetch_all(query)
+
+    return [
+        Order(
+            id=row["id"],
+            product=Product(
+                id=row["product_id"],
+                name=row["product_name"],
+                price=row["price"],
+                image=""  # optional placeholder
+            ),
+            quantity=row["quantity"],
+            total=row["total"],
+            status=row["status"]
+        )
+        for row in results
+    ]
 
 @app.get("/orders", response_model=list[Order])
 async def list_orders():
