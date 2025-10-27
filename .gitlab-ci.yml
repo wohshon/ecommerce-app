@@ -156,16 +156,19 @@ ai-risk-analysis:
 
       # echo $AI_ENDPOINT_URL
       # echo $AI_API_KEY
-      RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $AI_API_KEY" \
-        -d "{
-          \"model\": \"qwen3-coder-30b-a3b\",
-          \"messages\": [
-            {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
-            {\"role\": \"user\", \"content\": \"$PROMPT\"}
-          ]
-        }")
+      RESPONSE=$(jq -n --arg prompt "$PROMPT" \
+        '{
+          model: "qwen3-coder-30b-a3b",
+          messages: [
+            {role: "system", content: "You are a CI/CD assistant."},
+            {role: "user", content: $prompt}
+          ],
+          max_tokens: 256,
+          stream: false
+        }' | curl -s -k "$AI_ENDPOINT_URL" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $AI_API_KEY" \
+          -d @-)
       ## RAW RESPONSE
       echo "AI Response: $RESPONSE"
       # Extract content safely and fallback to empty arrays
