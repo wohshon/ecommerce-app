@@ -208,7 +208,11 @@ run-unit-tests:
         echo "Unit tests for $service executed (simulated)"
       done
   rules:
-    - when: always
+    - exists:
+        - test_selection.json
+    - if: '$CI_JOB_MANUAL == "false" && $(jq -r ".unit_tests | length" test_selection.json) > 0'
+      when: on_success
+    - when: never
 
 # ----------------------
 # Simulated Integration Test Job
@@ -233,7 +237,11 @@ run-integration-tests:
         fi
       done
   rules:
-    - when: always
+    - exists:
+        - test_selection.json
+    - if: '$CI_JOB_MANUAL == "false" && $(jq -r ".integration_tests | length" test_selection.json) > 0'
+      when: on_success
+    - when: never
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
