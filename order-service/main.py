@@ -55,6 +55,7 @@ class Order(OrderIn):
     total: float
     status: str
 
+# health check endpoint
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "order"}
