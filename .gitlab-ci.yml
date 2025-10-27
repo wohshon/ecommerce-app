@@ -170,9 +170,9 @@ ai-risk-analysis:
 
             echo "$RESPONSE"
             echo "$RESPONSE" > test_selection.json
-        artifacts:
-          paths:
-            - test_selection.json
+  artifacts:
+    paths:
+      - test_selection.json
 
 # ----------------------
 # Simulated Unit Test Job
