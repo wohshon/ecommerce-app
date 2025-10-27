@@ -188,11 +188,11 @@ run-unit-tests:
   before_script:
     - apt-get update && apt-get install -y jq
   script:
-    - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
+    - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
     - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
     - |
-      for service in $UNIT_TESTS; do
-        echo Unit tests for $service executed (simulated)
+      echo "$UNIT_TESTS" | jq -r '.[]' | while read service; do
+        echo "Unit tests for $service executed (simulated)"
       done
   rules:
     - when: always
@@ -209,13 +209,13 @@ run-integration-tests:
   before_script:
     - apt-get update && apt-get install -y jq
   script:
-    - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
+    - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
     - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
     - |
-      for service in $INTEGRATION_TESTS; do
-        echo Integration tests for $service executed (simulated)
+      echo "$INTEGRATION_TESTS" | jq -r '.[]' | while read service; do
+        echo "Integration tests for $service executed (simulated)"
         if [ "$service" = "payment-service" ]; then
-          echo 🚨 High-risk test failed for $service!
+          echo "🚨 High-risk test failed for $service!"
           exit 1
         fi
       done
