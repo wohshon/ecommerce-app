@@ -152,10 +152,10 @@ ai-risk-analysis:
 
       Respond with pure JSON only.
       Do NOT include any Markdown, quotes, or code fences.
-      Only include the fields: unit_tests and integration_tests.
+      Only include the fields: unit_tests and integration_tests, and the respective changed files that require testing under the right test.
       Example: {\"unit_tests\": [\"service1\"], \"integration_tests\": []}
       "
-      
+
       # echo $AI_ENDPOINT_URL
       # echo $AI_API_KEY
       RESPONSE=$(jq -n --arg prompt "$PROMPT" \
