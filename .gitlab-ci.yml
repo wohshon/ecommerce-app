@@ -127,39 +127,40 @@ ai-risk-analysis:
     - apt-get update && apt-get install -y jq curl git
     - pip install requests
   script:
-    - echo "Collecting changed files..."
+    - "echo 'Collecting changed files...'"
     # find a valid target branch
     - TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-$(git remote show origin | awk '/HEAD branch/ {print $NF}')}
-    - echo "Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)"
+    - "echo 'Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)'"
     - git fetch origin $TARGET_BRANCH || echo "⚠️ Failed to fetch target branch, continuing with HEAD only"
     - CHANGED_FILES=$(git diff --name-only origin/$TARGET_BRANCH...HEAD 2>/dev/null || echo "")
     - "echo 'Changed files: $CHANGED_FILES'"
     - |
       PROMPT="You are a CI/CD assistant. Based on these changed files:
 
-        $CHANGED_FILES
+      $CHANGED_FILES
 
-        Classify risk per file:
-        - Low: comment-only → skip tests
-        - Medium: function rename/refactor → run unit tests
-        - High: variable/config/API change → run unit + integration tests
+      Classify risk per file:
+      - Low: comment-only → skip tests
+      - Medium: function rename/refactor → run unit tests
+      - High: variable/config/API change → run unit + integration tests
 
-        Respond in JSON format:
-        { \"unit_tests\": [], \"integration_tests\": [] }"
-            - |
-              RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
-                -H "Content-Type: application/json" \
-                -H "Authorization: Bearer $AI_API_KEY" \
-                -d "{
-                  \"model\": \"qwen3-coder-30b-a3b\",
-                  \"messages\": [
-                    {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
-                    {\"role\": \"user\", \"content\": \"$PROMPT\"}
-                  ]
-                }" | jq -r '.choices[0].message.content')
-    - echo "AI Risk Analysis Response:"
-    - echo "$RESPONSE"
-    - echo "$RESPONSE" > test_selection.json
+      Respond in JSON format:
+      { \"unit_tests\": [], \"integration_tests\": [] }"
+
+      RESPONSE=$(curl -s -k "$AI_ENDPOINT_URL" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $AI_API_KEY" \
+        -d "{
+          \"model\": \"qwen3-coder-30b-a3b\",
+          \"messages\": [
+            {\"role\": \"system\", \"content\": \"You are a CI/CD assistant.\"},
+            {\"role\": \"user\", \"content\": \"$PROMPT\"}
+          ]
+        }" | jq -r '.choices[0].message.content')
+
+      echo "AI Risk Analysis Response:"
+      echo "$RESPONSE"
+      echo "$RESPONSE" > test_selection.json
   artifacts:
     paths:
       - test_selection.json
@@ -171,6 +172,8 @@ run-unit-tests:
   image: alpine:latest
   dependencies:
     - ai-risk-analysis
+  before_script:
+    - apt-get update && apt-get install -y jq
   script:
     - UNIT_TESTS=$(jq -r '.unit_tests | join(" ")' test_selection.json)
     - "echo 'Running unit tests for: $UNIT_TESTS (simulated)'"
@@ -189,6 +192,8 @@ run-integration-tests:
   image: alpine:latest
   dependencies:
     - ai-risk-analysis
+  before_script:
+    - apt-get update && apt-get install -y jq
   script:
     - INTEGRATION_TESTS=$(jq -r '.integration_tests | join(" ")' test_selection.json)
     - "echo 'Running integration tests for: $INTEGRATION_TESTS (simulated)'"
