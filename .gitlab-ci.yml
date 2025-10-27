@@ -148,8 +148,9 @@ ai-risk-analysis:
       $ESCAPED_DIFF
 
       Classify risk per file:
-      - Low: comment-only → skip tests
-      - Medium: function rename/refactor → run unit tests
+      - negligible: comment-only → skip tests
+      - Low: formatting, whitespaces → unit tests
+      - Medium: function rename/refactor → run integration tests
       - High: variable/config/API change → run unit + integration tests
 
       Respond with pure JSON only.
