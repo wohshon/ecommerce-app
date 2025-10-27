@@ -133,7 +133,8 @@ ai-risk-analysis:
       TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-$(git remote show origin | awk '/HEAD branch/ {print $NF}')}
       echo "Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)"
       git fetch origin "$TARGET_BRANCH" || echo "⚠️ Failed to fetch target branch, continuing with HEAD only"
-      CHANGED_FILES=$(git diff --name-only origin/"$TARGET_BRANCH"...HEAD 2>/dev/null || echo "")
+      CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD || echo "")
+      # CHANGED_FILES=$(git diff --name-only origin/"$TARGET_BRANCH"...HEAD 2>/dev/null || echo "")
       if [ -z "$CHANGED_FILES" ]; then
         echo "No changed files"
       else
