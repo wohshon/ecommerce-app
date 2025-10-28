@@ -1,6 +1,5 @@
 stages:
   - build
-  - ai_analyze
   - ai_decide_tests
   - trigger
 
