@@ -4,7 +4,7 @@ function About() {
   return (
     <div>
       <h1>About Our Store</h1>
-      <p>We sell awesome products!</p>
+      <p>We sell awesome products! - Hosted on NKP</p>
     </div>
   );
 }
