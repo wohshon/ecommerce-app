@@ -77,7 +77,8 @@ build-order-service:
         --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/order-service:buildcache \
         --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/order-service:buildcache,mode=max \
         --push \
-        --load \        -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
+        --load \
+        -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
     # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
     # - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest)
