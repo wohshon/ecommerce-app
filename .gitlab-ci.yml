@@ -24,8 +24,10 @@ variables:
 build-frontend:
   stage: build
   before_script:
-    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
-    - update-ca-certificates || true      
+#    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+#    - update-ca-certificates || true
+# test
+    - ls /tmp/ca-cert/
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
@@ -48,8 +50,8 @@ build-frontend:
 build-order-service:
   stage: build
   before_script:
-    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
-    - update-ca-certificates || true      
+ #   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+ #   - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
@@ -72,8 +74,8 @@ build-order-service:
 build-payment-service:
   stage: build
   before_script:
-    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
-    - update-ca-certificates || true      
+ #   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+ #   - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
@@ -96,8 +98,8 @@ build-payment-service:
 build-product-service:
   stage: build
   before_script:
-    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
-    - update-ca-certificates || true      
+ #   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+ #   - update-ca-certificates || true      
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
