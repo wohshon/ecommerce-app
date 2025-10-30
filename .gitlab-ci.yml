@@ -32,13 +32,10 @@ build-frontend:
 #    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
 #    - update-ca-certificates || true
 # test
-    - ls /tmp/ca-cert/
     - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-    # Optional: pull existing image to seed BuildKit cache
-    - docker pull $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest || true    
   script:
     - docker buildx create --use --name ci-builder || docker buildx use ci-builder
     - docker buildx build \
@@ -46,6 +43,7 @@ build-frontend:
         --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/frontend:buildcache \
         --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/frontend:buildcache,mode=max \
         --push \
+        --load \
         -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
 
     # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
@@ -71,7 +69,6 @@ build-order-service:
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-    - docker pull $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest || true
 
   script:
     - docker buildx create --use --name ci-builder || docker buildx use ci-builder
@@ -80,7 +77,7 @@ build-order-service:
         --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/order-service:buildcache \
         --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/order-service:buildcache,mode=max \
         --push \
-        -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
+        --load \        -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
     # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
     # - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest)
@@ -104,7 +101,6 @@ build-payment-service:
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-    - docker pull $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest || true
 
   script:
     - docker buildx create --use --name ci-builder || docker buildx use ci-builder
@@ -113,6 +109,7 @@ build-payment-service:
         --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/payment-service:buildcache \
         --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/payment-service:buildcache,mode=max \
         --push \
+        --load \
         -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
     # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
     # - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
@@ -137,7 +134,6 @@ build-product-service:
     - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-    - docker pull $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest || true
 
   script:
     - docker buildx create --use --name ci-builder || docker buildx use ci-builder
@@ -146,6 +142,7 @@ build-product-service:
         --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/product-service:buildcache \
         --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/product-service:buildcache,mode=max \
         --push \
+        --load \
         -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
     # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
     # - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
