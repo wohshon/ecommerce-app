@@ -37,17 +37,8 @@ build-frontend:
     #- mkdir -p /etc/docker/certs.d/wskn.local
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
   script:
-    - docker buildx create --use --name ci-builder || docker buildx use ci-builder
-    - docker buildx build \
-        --progress plain \
-        --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/frontend:buildcache \
-        --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/frontend:buildcache,mode=max \
-        --push \
-        --load \
-        -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
-
-    # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
-    # - docker push $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest
     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest)
     - echo "SERVICE_NAME=frontend" >> frontend.env
     - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> frontend.env
@@ -71,16 +62,8 @@ build-order-service:
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
 
   script:
-    - docker buildx create --use --name ci-builder || docker buildx use ci-builder
-    - docker buildx build \
-        --progress plain \
-        --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/order-service:buildcache \
-        --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/order-service:buildcache,mode=max \
-        --push \
-        --load \
-        -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
-    # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
-    # - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest)
     - echo "SERVICE_NAME=order-service" >> order.env
     - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> order.env
@@ -104,16 +87,8 @@ build-payment-service:
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
 
   script:
-    - docker buildx create --use --name ci-builder || docker buildx use ci-builder
-    - docker buildx build \
-        --progress plain \
-        --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/payment-service:buildcache \
-        --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/payment-service:buildcache,mode=max \
-        --push \
-        --load \
-        -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
-    # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
-    # - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest)
     - echo "SERVICE_NAME=payment-service" >> payment.env
     - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> payment.env
@@ -137,16 +112,8 @@ build-product-service:
     #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
 
   script:
-    - docker buildx create --use --name ci-builder || docker buildx use ci-builder
-    - docker buildx build \
-        --progress plain \
-        --cache-from type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/product-service:buildcache \
-        --cache-to type=registry,ref=$REGISTRY_URL/$DOCKER_USERNAME/product-service:buildcache,mode=max \
-        --push \
-        --load \
-        -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
-    # - docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
-    # - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
+    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
+    - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
     - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest)
     - echo "SERVICE_NAME=product-service" >> product.env
     - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> product.env
