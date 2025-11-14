@@ -15,7 +15,7 @@ cache:
 
 variables:
   GIT_SSL_NO_VERIFY: "true"
-  # REGISTRY_URL: "registry.wskn.local"
+  REGISTRY_URL: "registry.wskn.local"
   # REGISTRY_URL: "docker.io"
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2375
