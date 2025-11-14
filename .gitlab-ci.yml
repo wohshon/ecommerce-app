@@ -16,7 +16,7 @@ cache:
 variables:
   GIT_SSL_NO_VERIFY: "true"
   # REGISTRY_URL: "registry.wskn.local"
-  REGISTRY_URL: "docker.io"
+  # REGISTRY_URL: "docker.io"
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2375
   CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
@@ -175,7 +175,7 @@ ai-risk-analysis:
         '{
           model: "qwen3-coder-30b-a3b",
           messages: [
-            {role: "system", content: "You are a CI/CD assistant."},
+            {role: "system", content: "You are a CI/CD assistant that is very proficient in analysing codes changes and their impact."},
             {role: "user", content: $prompt}
           ],
           max_tokens: 256,
