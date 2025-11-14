@@ -6,6 +6,7 @@ stages:
 image: docker:24.0.7
 services:
   - name: docker:24-dind
+    # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
     command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
 cache:
   key: shared-docker-cache
@@ -14,7 +15,8 @@ cache:
 
 variables:
   GIT_SSL_NO_VERIFY: "true"
-  REGISTRY_URL: "registry.wskn.local"
+  # REGISTRY_URL: "registry.wskn.local"
+  REGISTRY_URL: "docker.io"
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2375
   CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
