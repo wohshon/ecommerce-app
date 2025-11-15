@@ -3,7 +3,8 @@ stages:
   - ai_decide_tests
   - trigger
 
-image: docker:24.0.7
+#image: docker:24.0.7
+image: registry.wskn.local/wohshon/gitlab-ci-tools
 services:
   - name: docker:24-dind
     # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
@@ -134,9 +135,9 @@ build-product-service:
 ai-risk-analysis:
   stage: ai_decide_tests
   image: python:3.11
-  before_script:
-    - apt-get update && apt-get install -y jq curl git
-    - pip install requests
+#  before_script:
+#    - apt-get update && apt-get install -y jq curl git
+#    - pip install requests
   script:
     - |
       echo "Collecting changed files..."
@@ -207,8 +208,8 @@ run-unit-tests:
   needs:
     - job: ai-risk-analysis
       artifacts: true
-  before_script:
-    - apt-get update && apt-get install -y jq
+#  before_script:
+#    - apt-get update && apt-get install -y jq
   script:
     - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
     - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
@@ -228,8 +229,8 @@ run-integration-tests:
   needs:
     - job: ai-risk-analysis
       artifacts: true
-  before_script:
-    - apt-get update && apt-get install -y jq
+#  before_script:
+#    - apt-get update && apt-get install -y jq
   script:
     - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
     - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
