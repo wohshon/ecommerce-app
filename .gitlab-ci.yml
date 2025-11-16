@@ -8,6 +8,7 @@ stages:
 image: registry.wskn.local/wohshon/gitlab-ci-tools
 services:
  - name: docker:24-dind
+   alias: docker
    # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
    command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
 cache:
