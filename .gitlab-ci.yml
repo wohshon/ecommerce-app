@@ -243,54 +243,67 @@ ai-risk-analysis:
 # Simulated Unit Test Job
 # ----------------------
 run-unit-tests:
- stage: ai_decide_tests
- # image: python:3.11
- image: registry.wskn.local/wohshon/gitlab-ci-tools
- needs:
-   - job: ai-risk-analysis
-     artifacts: true
-#  before_script:
-#    - apt-get update && apt-get install -y jq
- script:
-   - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
-   - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
-   - |
-     echo "$UNIT_TESTS" | jq -r '.[]? // empty' | while read service; do
-       echo "Unit tests for $service executed (simulated)"
-     done
- rules:
-   - if: '$RUN_UNIT == "false"'
-     when: never
-   - when: on_success
+  stage: ai_decide_tests
+  # image: python:3.11
+  image: registry.wskn.local/wohshon/gitlab-ci-tools
+  needs:
+    - job: ai-risk-analysis
+      artifacts: true
+  script:
+    # Read unit tests from JSON
+    - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
+
+    # Informative output
+    - |
+      if [ "$UNIT_TESTS" = "[]" ] || [ -z "$UNIT_TESTS" ]; then
+        echo "ℹ️  No unit tests selected — skipping job."
+      else
+        echo "✅ Unit tests selected: $UNIT_TESTS"
+        echo "$UNIT_TESTS" | jq -r '.[]? // empty' | while read service; do
+          echo "Running unit test for: $service (simulated)"
+        done
+      fi
+  rules:
+    - if: '$RUN_UNIT == "false"'
+      when: never
+    - when: on_success
 
 
 # ----------------------
 # Simulated Integration Test Job
 # ----------------------
 run-integration-tests:
- stage: ai_decide_tests
- # image: python:3.11
- image: registry.wskn.local/wohshon/gitlab-ci-tools
- needs:
-   - job: ai-risk-analysis
-     artifacts: true
+  stage: ai_decide_tests
+  # image: python:3.11
+  image: registry.wskn.local/wohshon/gitlab-ci-tools
+  needs:
+    - job: ai-risk-analysis
+      artifacts: true
 #  before_script:
 #    - apt-get update && apt-get install -y jq
- script:
-   - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
-   - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
-   - |
-     echo "$INTEGRATION_TESTS" | jq -r '.[]? // empty' | while read service; do
-       echo "Integration tests for $service executed (simulated)"
-       if [ "$service" = "payment-service" ]; then
-         echo "🚨 High-risk test failed for $service!"
-         exit 1
-       fi
-     done
- rules:
-   - if: '$RUN_INT == "false"'
-     when: never
-   - when: on_success
+  script:
+    # Read integration tests from JSON
+    - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
+
+    # Informative output
+    - |
+      if [ "$INTEGRATION_TESTS" = "[]" ] || [ -z "$INTEGRATION_TESTS" ]; then
+        echo "ℹ️  No integration tests selected — skipping job."
+      else
+        echo "✅ Integration tests selected: $INTEGRATION_TESTS"
+        echo "$INTEGRATION_TESTS" | jq -r '.[]? // empty' | while read service; do
+          echo "Running integration test for: $service (simulated)"
+          if [ "$service" = "payment-service" ]; then
+            echo "🚨 High-risk test failed for $service!"
+            exit 1
+          fi
+        done
+      fi
+  rules:
+    - if: '$RUN_INT == "false"'
+      when: never
+    - when: on_success
+
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
