@@ -36,6 +36,15 @@ variables:
 
 build-frontend:
  stage: build
+ image: registry.wskn.local/wohshon/gitlab-ci-tools
+ services:
+  - name: docker:24.0.7-dind
+    alias: docker
+    command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
+ variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
  before_script:
 #    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
 #    - update-ca-certificates || true
