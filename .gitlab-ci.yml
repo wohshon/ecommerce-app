@@ -1,334 +1,356 @@
 stages:
-  - build
-  - ai_decide_tests
-  - trigger
+ - build
+ - ai_decide_tests
+ - trigger
+
 
 #image: docker:24.0.7
 image: registry.wskn.local/wohshon/gitlab-ci-tools
 services:
-  - name: docker:24-dind
-    # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
-    command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
+ - name: docker:24-dind
+   # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
+   command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
 cache:
-  key: shared-docker-cache
-  paths:
-    - /var/lib/docker
+ key: shared-docker-cache
+ paths:
+   - /var/lib/docker
+
 
 variables:
-  GIT_SSL_NO_VERIFY: "true"
-  REGISTRY_URL: "registry.wskn.local"
-  # REGISTRY_URL: "docker.io"
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_HOST: tcp://docker:2375
-  CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
-  INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
-  DOCKER_DRIVER: overlay2
-  DOCKER_BUILDKIT: 1
+ GIT_SSL_NO_VERIFY: "true"
+ REGISTRY_URL: "registry.wskn.local"
+ # REGISTRY_URL: "docker.io"
+ DOCKER_TLS_CERTDIR: ""
+ DOCKER_HOST: tcp://docker:2375
+ CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
+ INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
+ DOCKER_DRIVER: overlay2
+ DOCKER_BUILDKIT: 1
+
 
 # ----------------------
 # Build Jobs
 # ----------------------
 
+
 build-frontend:
-  stage: build
-  before_script:
+ stage: build
+ before_script:
 #    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
 #    - update-ca-certificates || true
 # test
-    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
-    #- mkdir -p /etc/docker/certs.d/wskn.local
-    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
-  script:
-    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
-    - docker push $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest
-    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest)
-    - echo "SERVICE_NAME=frontend" >> frontend.env
-    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> frontend.env
-  artifacts:
-    paths:
-      - frontend.env
-    reports:
-      dotenv: frontend.env
-  rules:
-    - changes:
-        - frontend/**/*
+   - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+   - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+   #- mkdir -p /etc/docker/certs.d/wskn.local
+   #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
+ script:
+   - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest ./frontend
+   - docker push $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest
+   - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/frontend:latest)
+   - echo "SERVICE_NAME=frontend" >> frontend.env
+   - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> frontend.env
+ artifacts:
+   paths:
+     - frontend.env
+   reports:
+     dotenv: frontend.env
+ rules:
+   - changes:
+       - frontend/**/*
+
 
 build-order-service:
-  stage: build
-  before_script:
- #   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
- #   - update-ca-certificates || true      
-    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
-    #- mkdir -p /etc/docker/certs.d/wskn.local
-    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
+ stage: build
+ before_script:
+#   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+#   - update-ca-certificates || true     
+   - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+   - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+   #- mkdir -p /etc/docker/certs.d/wskn.local
+   #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
 
-  script:
-    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
-    - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
-    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest)
-    - echo "SERVICE_NAME=order-service" >> order.env
-    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> order.env
-  artifacts:
-    paths:
-      - order.env
-    reports:
-      dotenv: order.env
-  rules:
-    - changes:
-        - order-service/**/*
+
+ script:
+   - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest ./order-service
+   - docker push $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest
+   - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/order-service:latest)
+   - echo "SERVICE_NAME=order-service" >> order.env
+   - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> order.env
+ artifacts:
+   paths:
+     - order.env
+   reports:
+     dotenv: order.env
+ rules:
+   - changes:
+       - order-service/**/*
+
 
 build-payment-service:
-  stage: build
-  before_script:
- #   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
- #   - update-ca-certificates || true      
-    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
-    #- mkdir -p /etc/docker/certs.d/wskn.local
-    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
+ stage: build
+ before_script:
+#   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+#   - update-ca-certificates || true     
+   - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+   - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+   #- mkdir -p /etc/docker/certs.d/wskn.local
+   #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
 
-  script:
-    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
-    - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
-    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest)
-    - echo "SERVICE_NAME=payment-service" >> payment.env
-    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> payment.env
-  artifacts:
-    paths:
-      - payment.env
-    reports:
-      dotenv: payment.env
-  rules:
-    - changes:
-        - payment-service/**/*
+
+ script:
+   - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest ./payment-service
+   - docker push $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest
+   - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/payment-service:latest)
+   - echo "SERVICE_NAME=payment-service" >> payment.env
+   - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> payment.env
+ artifacts:
+   paths:
+     - payment.env
+   reports:
+     dotenv: payment.env
+ rules:
+   - changes:
+       - payment-service/**/*
+
 
 build-product-service:
-  stage: build
-  before_script:
- #   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
- #   - update-ca-certificates || true      
-    - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
-    - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
-    #- mkdir -p /etc/docker/certs.d/wskn.local
-    #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
+ stage: build
+ before_script:
+#   - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
+#   - update-ca-certificates || true     
+   - until docker info; do echo "Waiting for Docker daemon..."; sleep 3; done
+   - echo "$DOCKER_PASSWORD" | docker login https://$REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+   #- mkdir -p /etc/docker/certs.d/wskn.local
+   #- echo "$REGISTRY_CA_CERT" | base64 -d > /etc/docker/certs.d/wskn.local/wskn.local.crt
 
-  script:
-    - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
-    - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
-    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest)
-    - echo "SERVICE_NAME=product-service" >> product.env
-    - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> product.env
-  artifacts:
-    paths:
-      - product.env
-    reports:
-      dotenv: product.env
-  rules:
-    - changes:
-        - product-service/**/*
+
+ script:
+   - docker build -t $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest ./product-service
+   - docker push $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest
+   - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY_URL/$DOCKER_USERNAME/product-service:latest)
+   - echo "SERVICE_NAME=product-service" >> product.env
+   - echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> product.env
+ artifacts:
+   paths:
+     - product.env
+   reports:
+     dotenv: product.env
+ rules:
+   - changes:
+       - product-service/**/*
+
 
 # ----------------------
 # AI Risk Analysis Job
 # ----------------------
 ai-risk-analysis:
-  stage: ai_decide_tests
-  # image: python:3.11
-  image: registry.wskn.local/wohshon/gitlab-ci-tools
+ stage: ai_decide_tests
+ # image: python:3.11
+ image: registry.wskn.local/wohshon/gitlab-ci-tools
 #  before_script:
 #    - apt-get update && apt-get install -y jq curl git
 #    - pip install requests
-  script:
-    - |
-      echo "Collecting changed files..."
-      TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-$(git remote show origin | awk '/HEAD branch/ {print $NF}')}
-      echo "Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)"
-      git fetch origin "$TARGET_BRANCH" || echo "⚠️ Failed to fetch target branch, continuing with HEAD only"
-      # CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD || echo "")
-      CHANGED_DIFF=$(git diff HEAD~1 HEAD || echo "")
-      if [ -z "$CHANGED_DIFF" ]; then
-        echo "No changed files"
-      else
-        echo "Changed Diff: $CHANGED_DIFF"
-      fi
-      
-      ESCAPED_DIFF=$(printf '%s' "$CHANGED_DIFF" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+ script:
+   - |
+     echo "Collecting changed files..."
+     TARGET_BRANCH=${CI_MERGE_REQUEST_TARGET_BRANCH:-$(git remote show origin | awk '/HEAD branch/ {print $NF}')}
+     echo "Comparing current branch ($CI_COMMIT_REF_NAME) with target ($TARGET_BRANCH)"
+     git fetch origin "$TARGET_BRANCH" || echo "⚠️ Failed to fetch target branch, continuing with HEAD only"
+     # CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD || echo "")
+     CHANGED_DIFF=$(git diff HEAD~1 HEAD || echo "")
+     if [ -z "$CHANGED_DIFF" ]; then
+       echo "No changed files"
+     else
+       echo "Changed Diff: $CHANGED_DIFF"
+     fi
+    
+     ESCAPED_DIFF=$(printf '%s' "$CHANGED_DIFF" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
-      PROMPT="You are a CI/CD assistant. Based on these changed files:
 
-      $ESCAPED_DIFF
+     PROMPT="You are a CI/CD assistant. Based on these changed files:
 
-      Classify risk per file:
-      - negligible: comment-only → skip tests
-      - Low: formatting, whitespaces → unit tests
-      - Medium: function rename/refactor, → run integration tests
-      - High: variable/config/API change → run unit + integration tests
 
-      Respond with pure JSON only.
-      Do NOT include any Markdown, quotes, or code fences.
-      Only include the fields: unit_tests and integration_tests, and the respective changed files that require testing under the right test.
-      Example: {\"unit_tests\": [\"service1\"], \"integration_tests\": []}
-      "
+     $ESCAPED_DIFF
 
-      # echo $AI_ENDPOINT_URL
-      # echo $AI_API_KEY
-      RESPONSE=$(jq -n --arg prompt "$PROMPT" \
-        '{
-          model: "qwen3-coder-30b-a3b",
-          messages: [
-            {role: "system", content: "You are a CI/CD assistant that is very proficient in analysing codes changes and their impact."},
-            {role: "user", content: $prompt}
-          ],
-          max_tokens: 256,
-          stream: false
-        }' | curl -s -k "$AI_ENDPOINT_URL" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $AI_API_KEY" \
-          -d @-)
-      ## RAW RESPONSE
-      echo "AI Response: $RESPONSE"
-      # Extract content safely and fallback to empty arrays
-      RESPONSE=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "{\"unit_tests\":[],\"integration_tests\":[]}"')
 
-      # Remove quotes if stringified
-      RESPONSE=$(echo "$RESPONSE" | sed 's/^"\(.*\)"$/\1/' | sed 's/\\"/"/g')
+     Classify risk per file:
+     - negligible: comment-only → skip tests
+     - Low: formatting, whitespaces → unit tests
+     - Medium: function rename/refactor, → run integration tests
+     - High: variable/config/API change → run unit + integration tests
 
-      # Validate JSON, fallback if invalid
-      echo "$RESPONSE" | jq '.' > test_selection.json || echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
-      # --- Determine if tests should run ---
-      UNIT_COUNT=$(jq '.unit_tests | length' test_selection.json)
-      INTEG_COUNT=$(jq '.integration_tests | length' test_selection.json)
 
-      if [ "$UNIT_COUNT" -gt 0 ]; then
-        echo "RUN_UNIT=true" >> decide.env
-      else
-        echo "RUN_UNIT=false" >> decide.env
-      fi
+     Respond with pure JSON only.
+     Do NOT include any Markdown, quotes, or code fences.
+     Only include the fields: unit_tests and integration_tests, and the respective changed files that require testing under the right test.
+     Example: {\"unit_tests\": [\"service1\"], \"integration_tests\": []}
+     "
 
-      if [ "$INTEG_COUNT" -gt 0 ]; then
-        echo "RUN_INT=true" >> decide.env
-      else
-        echo "RUN_INT=false" >> decide.env
-      fi
-  artifacts:
-    paths:
-      - test_selection.json
-      - decide.env
-    reports:
-      dotenv: decide.env
+
+     # echo $AI_ENDPOINT_URL
+     # echo $AI_API_KEY
+     RESPONSE=$(jq -n --arg prompt "$PROMPT" \
+       '{
+         model: "qwen3-coder-30b-a3b",
+         messages: [
+           {role: "system", content: "You are a CI/CD assistant that is very proficient in analysing codes changes and their impact."},
+           {role: "user", content: $prompt}
+         ],
+         max_tokens: 256,
+         stream: false
+       }' | curl -s -k "$AI_ENDPOINT_URL" \
+         -H "Content-Type: application/json" \
+         -H "Authorization: Bearer $AI_API_KEY" \
+         -d @-)
+     ## RAW RESPONSE
+     echo "AI Response: $RESPONSE"
+     # Extract content safely and fallback to empty arrays
+     RESPONSE=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "{\"unit_tests\":[],\"integration_tests\":[]}"')
+
+
+     # Remove quotes if stringified
+     RESPONSE=$(echo "$RESPONSE" | sed 's/^"\(.*\)"$/\1/' | sed 's/\\"/"/g')
+
+
+     # Validate JSON, fallback if invalid
+     echo "$RESPONSE" | jq '.' > test_selection.json || echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
+     # --- Determine if tests should run ---
+     UNIT_COUNT=$(jq '.unit_tests | length' test_selection.json)
+     INTEG_COUNT=$(jq '.integration_tests | length' test_selection.json)
+
+
+     if [ "$UNIT_COUNT" -gt 0 ]; then
+       echo "RUN_UNIT=true" >> decide.env
+     else
+       echo "RUN_UNIT=false" >> decide.env
+     fi
+
+
+     if [ "$INTEG_COUNT" -gt 0 ]; then
+       echo "RUN_INT=true" >> decide.env
+     else
+       echo "RUN_INT=false" >> decide.env
+     fi
+ artifacts:
+   paths:
+     - test_selection.json
+     - decide.env
+   reports:
+     dotenv: decide.env
+
 
 # ----------------------
 # Simulated Unit Test Job
 # ----------------------
 run-unit-tests:
-  stage: ai_decide_tests
-  # image: python:3.11
-  image: registry.wskn.local/wohshon/gitlab-ci-tools
-  needs:
-    - job: ai-risk-analysis
-      artifacts: true
+ stage: ai_decide_tests
+ # image: python:3.11
+ image: registry.wskn.local/wohshon/gitlab-ci-tools
+ needs:
+   - job: ai-risk-analysis
+     artifacts: true
 #  before_script:
 #    - apt-get update && apt-get install -y jq
-  script:
-    - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
-    - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
-    - |
-      echo "$UNIT_TESTS" | jq -r '.[]? // empty' | while read service; do
-        echo "Unit tests for $service executed (simulated)"
-      done
-  rules:
-    - if: '$RUN_UNIT == "false"'
-      when: never
-    - when: on_success
+ script:
+   - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
+   - "echo \"Running unit tests for: $UNIT_TESTS (simulated)\""
+   - |
+     echo "$UNIT_TESTS" | jq -r '.[]? // empty' | while read service; do
+       echo "Unit tests for $service executed (simulated)"
+     done
+ rules:
+   - if: '$RUN_UNIT == "false"'
+     when: never
+   - when: on_success
+
 
 # ----------------------
 # Simulated Integration Test Job
 # ----------------------
 run-integration-tests:
-  stage: ai_decide_tests
-  # image: python:3.11
-  image: registry.wskn.local/wohshon/gitlab-ci-tools
-  needs:
-    - job: ai-risk-analysis
-      artifacts: true
+ stage: ai_decide_tests
+ # image: python:3.11
+ image: registry.wskn.local/wohshon/gitlab-ci-tools
+ needs:
+   - job: ai-risk-analysis
+     artifacts: true
 #  before_script:
 #    - apt-get update && apt-get install -y jq
-  script:
-    - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
-    - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
-    - |
-      echo "$INTEGRATION_TESTS" | jq -r '.[]? // empty' | while read service; do
-        echo "Integration tests for $service executed (simulated)"
-        if [ "$service" = "payment-service" ]; then
-          echo "🚨 High-risk test failed for $service!"
-          exit 1
-        fi
-      done
-  rules:
-    - if: '$RUN_INT == "false"'
-      when: never
-    - when: on_success
+ script:
+   - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
+   - "echo \"Running integration tests for: $INTEGRATION_TESTS (simulated)\""
+   - |
+     echo "$INTEGRATION_TESTS" | jq -r '.[]? // empty' | while read service; do
+       echo "Integration tests for $service executed (simulated)"
+       if [ "$service" = "payment-service" ]; then
+         echo "🚨 High-risk test failed for $service!"
+         exit 1
+       fi
+     done
+ rules:
+   - if: '$RUN_INT == "false"'
+     when: never
+   - when: on_success
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
 trigger-infra:
-  stage: trigger
-  # image: curlimages/curl:latest
-  image: registry.wskn.local/wohshon/gitlab-ci-tools
-  # image: alpine:latest
-  variables:
-    CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
-    INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
-  dependencies:
-    - build-frontend
-    - build-order-service
-    - build-payment-service
-    - build-product-service
-  needs:
-    - job: run-unit-tests
-    - job: run-integration-tests  
-    - job: build-frontend
-      optional: true
-    - job: build-order-service
-      optional: true
-    - job: build-payment-service
-      optional: true
-    - job: build-product-service
-      optional: true
-  before_script:
-    - echo "triggering infra pipeline"   
-  script:
-    - "echo $REGISTRY_URL"
-    - "echo $DOCKER_USERNAME"
-    - "echo $IMAGE_DIGEST"
-    - "echo $CI_API_V4_URL"
-    - "echo $INFRA_PROJECT_ID"
-    - "echo $SERVICE_NAME"
-    - "echo"
-    - |
-      echo "Checking built services to trigger infra pipeline..."
-      for artifact in frontend.env order.env payment.env product.env; do
-        if [ -f "$artifact" ]; then
-          echo "found artifact -  $artifact"
-          source "$artifact"
-          if [ -n "$SERVICE_NAME" ] && [ -n "$IMAGE_DIGEST" ]; then
-            echo "Triggering infra pipeline for $SERVICE_NAME..."
-            curl -k -X POST \
-              -F token=$TRIGGER_TOKEN \
-              -F ref=dev \
-              -F "variables[SERVICE_NAME]=$SERVICE_NAME" \
-              -F "variables[APP_IMAGE]=$IMAGE_DIGEST" \
-              -F "commit_message=$CURRENT_COMMIT_MSG" \
-              "$CI_API_V4_URL/projects/$INFRA_PROJECT_ID/trigger/pipeline"
-          fi
-        fi
-      done
-  rules:
-  - exists:
-      - frontend.env
-      - order.env
-      - payment.env
-      - product.env
-    when: on_success
-  - when: never
+ stage: trigger
+ # image: curlimages/curl:latest
+ image: registry.wskn.local/wohshon/gitlab-ci-tools
+ # image: alpine:latest
+ variables:
+   CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
+   INFRA_PROJECT_ID: "2"  # Replace with your actual infra project ID
+ dependencies:
+   - build-frontend
+   - build-order-service
+   - build-payment-service
+   - build-product-service
+ needs:
+   - job: run-unit-tests
+   - job: run-integration-tests 
+   - job: build-frontend
+     optional: true
+   - job: build-order-service
+     optional: true
+   - job: build-payment-service
+     optional: true
+   - job: build-product-service
+     optional: true
+ before_script:
+   - echo "triggering infra pipeline"  
+ script:
+   - "echo $REGISTRY_URL"
+   - "echo $DOCKER_USERNAME"
+   - "echo $IMAGE_DIGEST"
+   - "echo $CI_API_V4_URL"
+   - "echo $INFRA_PROJECT_ID"
+   - "echo $SERVICE_NAME"
+   - "echo"
+   - |
+     echo "Checking built services to trigger infra pipeline..."
+     for artifact in frontend.env order.env payment.env product.env; do
+       if [ -f "$artifact" ]; then
+         echo "found artifact -  $artifact"
+         source "$artifact"
+         if [ -n "$SERVICE_NAME" ] && [ -n "$IMAGE_DIGEST" ]; then
+           echo "Triggering infra pipeline for $SERVICE_NAME..."
+           curl -k -X POST \
+             -F token=$TRIGGER_TOKEN \
+             -F ref=dev \
+             -F "variables[SERVICE_NAME]=$SERVICE_NAME" \
+             -F "variables[APP_IMAGE]=$IMAGE_DIGEST" \
+             -F "commit_message=$CURRENT_COMMIT_MSG" \
+             "$CI_API_V4_URL/projects/$INFRA_PROJECT_ID/trigger/pipeline"
+         fi
+       fi
+     done
+ rules:
+ - exists:
+     - frontend.env
+     - order.env
+     - payment.env
+     - product.env
+   when: on_success
+ - when: never
