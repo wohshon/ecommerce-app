@@ -246,6 +246,8 @@ run-unit-tests:
   needs:
     - job: ai-risk-analysis
       artifacts: true
+  before_script:
+    - apt-get update && apt-get install -y jq  
   script:
     # Read unit tests from JSON
     - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
