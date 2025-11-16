@@ -162,7 +162,7 @@ ai-risk-analysis:
       Classify risk per file:
       - negligible: comment-only → skip tests
       - Low: formatting, whitespaces → unit tests
-      - Medium: function rename/refactor → run integration tests
+      - Medium: function rename/refactor, → run integration tests
       - High: variable/config/API change → run unit + integration tests
 
       Respond with pure JSON only.
@@ -196,9 +196,27 @@ ai-risk-analysis:
 
       # Validate JSON, fallback if invalid
       echo "$RESPONSE" | jq '.' > test_selection.json || echo '{"unit_tests":[],"integration_tests":[]}' > test_selection.json
+      # --- Determine if tests should run ---
+      UNIT_COUNT=$(jq '.unit_tests | length' test_selection.json)
+      INTEG_COUNT=$(jq '.integration_tests | length' test_selection.json)
+
+      if [ "$UNIT_COUNT" -gt 0 ]; then
+        echo "RUN_UNIT=true" >> decide.env
+      else
+        echo "RUN_UNIT=false" >> decide.env
+      fi
+
+      if [ "$INTEG_COUNT" -gt 0 ]; then
+        echo "RUN_INT=true" >> decide.env
+      else
+        echo "RUN_INT=false" >> decide.env
+      fi
   artifacts:
     paths:
       - test_selection.json
+      - decide.env
+    reports:
+      dotenv: decide.env
 
 # ----------------------
 # Simulated Unit Test Job
@@ -220,7 +238,9 @@ run-unit-tests:
         echo "Unit tests for $service executed (simulated)"
       done
   rules:
-    - when: always
+    - if: '$RUN_UNIT == "false"'
+      when: never
+    - when: on_success
 
 # ----------------------
 # Simulated Integration Test Job
@@ -246,7 +266,9 @@ run-integration-tests:
         fi
       done
   rules:
-    - when: always
+    - if: '$RUN_INT == "false"'
+      when: never
+    - when: on_success
 # ----------------------
 # Trigger infra for any built service
 # ----------------------
@@ -303,4 +325,10 @@ trigger-infra:
         fi
       done
   rules:
-    - when: always
+  - exists:
+      - frontend.env
+      - order.env
+      - payment.env
+      - product.env
+    when: on_success
+  - when: never
