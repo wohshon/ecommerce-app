@@ -4,12 +4,10 @@ stages:
  - trigger
 
 
-#image: docker:24.0.7
-image: registry.wskn.local/wohshon/gitlab-ci-tools
+image: docker:24.0.7
 services:
  - name: docker:24-dind
-   alias: docker
-   # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
+   # alias: docker
    command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
 cache:
  key: shared-docker-cache
@@ -36,15 +34,6 @@ variables:
 
 build-frontend:
  stage: build
- image: registry.wskn.local/wohshon/gitlab-ci-tools
- services:
-  - name: docker:24.0.7-dind
-    alias: docker
-    command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
- variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
  before_script:
 #    - cp /tmp/ca-cert/ca.crt /usr/local/share/ca-certificates/
 #    - update-ca-certificates || true
@@ -155,11 +144,10 @@ build-product-service:
 # ----------------------
 ai-risk-analysis:
  stage: ai_decide_tests
- # image: python:3.11
- image: registry.wskn.local/wohshon/gitlab-ci-tools
-#  before_script:
-#    - apt-get update && apt-get install -y jq curl git
-#    - pip install requests
+ image: python:3.11
+ before_script:
+    - apt-get update && apt-get install -y jq curl git
+    - pip install requests
  script:
    - |
      echo "Collecting changed files..."
@@ -254,11 +242,12 @@ ai-risk-analysis:
 # ----------------------
 run-unit-tests:
   stage: ai_decide_tests
-  # image: python:3.11
-  image: registry.wskn.local/wohshon/gitlab-ci-tools
+  image: python:3.11
   needs:
     - job: ai-risk-analysis
       artifacts: true
+  before_script:
+    - apt-get update && apt-get install -y jq  
   script:
     # Read unit tests from JSON
     - UNIT_TESTS=$(jq -c '.unit_tests // []' test_selection.json)
@@ -284,13 +273,12 @@ run-unit-tests:
 # ----------------------
 run-integration-tests:
   stage: ai_decide_tests
-  # image: python:3.11
-  image: registry.wskn.local/wohshon/gitlab-ci-tools
+  image: python:3.11
   needs:
     - job: ai-risk-analysis
       artifacts: true
-#  before_script:
-#    - apt-get update && apt-get install -y jq
+  before_script:
+    - apt-get update && apt-get install -y jq
   script:
     # Read integration tests from JSON
     - INTEGRATION_TESTS=$(jq -c '.integration_tests // []' test_selection.json)
@@ -319,8 +307,7 @@ run-integration-tests:
 # ----------------------
 trigger-infra:
  stage: trigger
- # image: curlimages/curl:latest
- image: registry.wskn.local/wohshon/gitlab-ci-tools
+ image: curlimages/curl:latest
  # image: alpine:latest
  variables:
    CI_API_V4_URL: "https://gitlab.wskn.local/api/v4"
