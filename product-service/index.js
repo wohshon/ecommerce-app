@@ -16,7 +16,7 @@ console.log(`HOST is ${HOST}`);
 // simple in-memory products
 
 const products = [
-  { id: 1, name: "Laptop", price: 2999.99, image: "images/laptop.png" },
+  { id: 1, name: "Laptop", price: 1999.99, image: "images/laptop.png" },
   { id: 2, name: "Phone",  price: 899.99,  image: "images/phone.png" },
   // { id: 3, name: "Mug",    price: 9.99,    image: "images/mug.jpg" },
   { id: 3, name: "Headphones", price: 189.99, image: "images/headphones.png" },
@@ -31,5 +31,20 @@ app.get('/products/:id', (req, res) => {
   if (!p) return res.status(404).json({ error: 'not found' });
   res.json(p);
 });
-
+// add functions
+app.get('/products1/:id', (req, res) => {
+  const p = products.find(x => x.id === parseInt(req.params.id, 10));
+  if (!p) return res.status(404).json({ error: 'not found' });
+  res.json(p);
+});
+app.get('/products2/:id', (req, res) => {
+  const p = products.find(x => x.id === parseInt(req.params.id, 10));
+  if (!p) return res.status(404).json({ error: 'not found' });
+  res.json(p);
+});
+app.get('/products3/:id', (req, res) => {
+  const p = products.find(x => x.id === parseInt(req.params.id, 10));
+  if (!p) return res.status(404).json({ error: 'not found' });
+  res.json(p);
+});
 app.listen(PORT, () => console.log(`Product service listening on ${PORT}`));
