@@ -31,20 +31,4 @@ app.get('/products/:id', (req, res) => {
   if (!p) return res.status(404).json({ error: 'not found' });
   res.json(p);
 });
-// add functions
-app.get('/products1/:id', (req, res) => {
-  const p = products.find(x => x.id === parseInt(req.params.id, 10));
-  if (!p) return res.status(404).json({ error: 'not found' });
-  res.json(p);
-});
-app.get('/products2/:id', (req, res) => {
-  const p = products.find(x => x.id === parseInt(req.params.id, 10));
-  if (!p) return res.status(404).json({ error: 'not found' });
-  res.json(p);
-});
-app.get('/products3/:id', (req, res) => {
-  const p = products.find(x => x.id === parseInt(req.params.id, 10));
-  if (!p) return res.status(404).json({ error: 'not found' });
-  res.json(p);
-});
 app.listen(PORT, () => console.log(`Product service listening on ${PORT}`));
