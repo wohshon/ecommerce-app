@@ -38,10 +38,16 @@ app.get('/products2/:id', (req, res) => {
 });
 
 app.get('/products2/:id', (req, res) => {
-  const p = products.find(x => x.id === parseInt(req.params.id, 10));
+  var p = products.find(x => x.id === parseInt(req.params.id, 10));
+  const x = "randome value * 42";
   if (!p) return res.status(404).json({ error: 'not found' });
   res.json(p);
 });
 
+app.get('/products3/:id', (req, res) => {
+  const p = products.find(x => x.id === parseInt(req.params.id, 10));
+  if (!p) return res.status(404).json({ error: 'not found' });
+  res.json(p);
+});
 
 app.listen(PORT, () => console.log(`Product service listening on ${PORT}`));
