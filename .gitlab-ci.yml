@@ -166,23 +166,23 @@ ai-risk-analysis:
      ESCAPED_DIFF=$(printf '%s' "$CHANGED_DIFF" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
 
-     PROMPT="You are a CI/CD assistant. Based on these changed files:
-
+     PROMPT="You are a CI/CD assistant and coding expert who is very proficient in analyzing code changes in git repo and assessing their risk impact. 
+     Based on these changed files:
 
      $ESCAPED_DIFF
 
 
-     Classify risk per file:
+     Classify the risk per file and the test they should be subjected to:
      - negligible: comment-only → skip tests
-     - Low: formatting, whitespaces → unit tests
+     - Low: formatting, text changes, whitespaces → unit tests
      - Medium: Add new functions → run integration tests
-     - High: variable/config/API change/function rename, remove/refactor → run unit + integration tests
+     - High: variable/config/API changes, function rename, remove/refactor of functions, adding of functions → run both unit and integration tests
 
 
      Respond with pure JSON only.
      Do NOT include any Markdown, quotes, or code fences.
-     Only include the fields: unit_tests and integration_tests, and the respective changed files that require testing under the right test.
-     Example: {\"unit_tests\": [\"service1\"], \"integration_tests\": []}
+     Only include the fields: unit_tests and integration_tests, and the respective changed files that require testing under the right tests.
+     Example: {\"unit_tests\": [\"service1, service2\"], \"integration_tests\": [\"service2\"]}
      "
 
 
