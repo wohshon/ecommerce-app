@@ -357,10 +357,4 @@ trigger-infra:
        fi
      done
  rules:
- - exists:
-     - frontend.env
-     - order.env
-     - payment.env
-     - product.env
-   when: on_success
- - when: never
+   - when: always
