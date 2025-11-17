@@ -4,8 +4,7 @@ stages:
  - trigger
 
 
-#image: docker:24.0.7
-image: registry.wskn.local/wohshon/gitlab-ci-tools
+image: docker:24.0.7
 services:
  - name: docker:24-dind
    # command: ["--insecure-registry=registry.wskn.local", "--storage-driver=overlay2"]
