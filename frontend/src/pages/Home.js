@@ -89,7 +89,7 @@ function Home() {
 
   return (
     <div style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
-      <h1>NKP eStore Demo</h1>
+      <h1>Nutanix Kubernetes Platform eStore Demo</h1>
       <h2>Products</h2>
 
       {products.length === 0 ? (
