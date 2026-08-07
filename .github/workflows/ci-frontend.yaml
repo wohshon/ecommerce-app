@@ -9,7 +9,7 @@ on:
 
 env:
   # UPDATE THIS LINE with your actual Docker username
-  IMAGE_NAME: "wohshon/frontend" 
+  IMAGE_NAME: "docker.io/wohshon/frontend" 
   INFRA_REPO: "wohshon/ecommerce-infra"
 
 jobs:
