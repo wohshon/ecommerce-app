@@ -1,14 +1,14 @@
-name: Build and Update Product Service
+name: Build and Update Order Service
 
 on:
   push:
     branches:
       - production
     paths:
-      - 'product-service/**'
+      - 'order-service/**'
 
 env:
-  IMAGE_NAME: "docker.io/wohshon/product-service"
+  IMAGE_NAME: "docker.io/wohshon/order-service"
   INFRA_REPO: "wohshon/ecommerce-infra"
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./product-service
+          context: ./order-service
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Update Kustomize Image Tag
         run: |
-          cd infra/k8s/base/product-service
+          cd infra/k8s/base/order-service
           kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Commit and Push
@@ -52,6 +52,6 @@ jobs:
           cd infra
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add k8s/base/product-service/kustomization.yaml
-          git commit -m "deploy: update product-service image to ${{ github.sha }}"
+          git add k8s/base/order-service/kustomization.yaml
+          git commit -m "deploy: update order-service image to ${{ github.sha }}"
           git push

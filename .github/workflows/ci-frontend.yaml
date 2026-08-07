@@ -3,13 +3,12 @@ name: Build and Update Frontend
 on:
   push:
     branches:
-      - demo
+      - production
     paths:
       - 'frontend/**'
 
 env:
-  # UPDATE THIS LINE with your actual Docker username
-  IMAGE_NAME: "docker.io/wohshon/frontend" 
+  IMAGE_NAME: "docker.io/wohshon/frontend"
   INFRA_REPO: "wohshon/ecommerce-infra"
 
 jobs:
@@ -38,14 +37,14 @@ jobs:
           repository: ${{ env.INFRA_REPO }}
           token: ${{ secrets.INFRA_REPO_PAT }}
           path: infra
-          ref: demo
+          ref: production
 
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v2
 
       - name: Update Kustomize Image Tag
         run: |
-          cd infra/k8s/frontend
+          cd infra/k8s/base/frontend
           kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Commit and Push
@@ -53,6 +52,6 @@ jobs:
           cd infra
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add k8s/frontend/kustomization.yaml
+          git add k8s/base/frontend/kustomization.yaml
           git commit -m "deploy: update frontend image to ${{ github.sha }}"
           git push
