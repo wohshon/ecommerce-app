@@ -47,7 +47,7 @@ jobs:
 
       - name: Update Kustomize Image Tag
         run: |
-          cd infra/k8s/order-service
+          cd infra/k8s/base/order-service
           kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Commit and Push
