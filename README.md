@@ -92,11 +92,56 @@ docker run -d --name product-service -p 8081:8081 \
   docker.io/wohshon/product-service:latest
 ```
 
+### Multi arch 
+
+```
+docker buildx build --platform linux/amd64,linux/arm64 -t docker.io/wohshon/order-service:latest --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t docker.io/wohshon/product-service:latest --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t docker.io/wohshon/payment-service:latest --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t docker.io/wohshon/frontend:latest --push .
+```
+
 ```
 For local testing, you can override these by creating a .env.local file in your frontend repo:
+in server.js
+const PRODUCT_SERVICE = process.env.PRODUCT_SERVICE || 'http://localhost:8081';
+const ORDER_SERVICE = process.env.ORDER_SERVICE || 'http://localhost:8082';
+const PAYMENT_SERVICE = process.env.PAYMENT_SERVICE || 'http://localhost:8083';
 
-REACT_APP_PRODUCT_SERVICE_URL=http://localhost:8081
-REACT_APP_ORDER_SERVICE_URL=http://localhost:8082
-REACT_APP_PAYMENT_SERVICE_URL=http://localhost:8083
+to run in dev, do not use npm start
+
+npm run build # this generate the static file in build folder
+then run
+node server.js # start the server side + load static file in build
+
+```
+
+### order service 
+
+#### Local test
+```
+uvicorn main:app --host 0.0.0.0 --port 8082
+
+
+docker run -d \
+  --name postgres-local \
+  -e POSTGRES_USER=order_user \
+  -e POSTGRES_PASSWORD=order_pass \
+  -e POSTGRES_DB=orderdb \
+  -p 5432:5432 \
+  postgres
+
+docker rm postgres-local
+
+docker exec -it postgres-local psql -U order_user -d orderdb
+
+orderdb=# \d
+```
+
+#### K8s
+
+db deinition (secrets and pvc request all in )
+```
+dn/order-postgres.yaml
 
 ```
